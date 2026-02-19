@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Escolar - Formato Vertical</title>
+    <title>Horario AQR - Versión Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         :root {
             --bg-sidebar: #1e293b;
-            --border: #000000; /* Borde negro para que resalte */
+            --border-color: #000000;
             --accent: #3b82f6;
             --sidebar-width: 280px;
         }
@@ -22,7 +22,7 @@
             background: #f1f5f9;
         }
 
-        /* Controles */
+        /* Botones superiores */
         .top-controls {
             position: fixed; left: 10px; top: 10px;
             z-index: 1000; display: flex; gap: 10px;
@@ -42,109 +42,106 @@
             background: var(--bg-sidebar); color: white;
             padding: 70px 20px 20px 20px; position: fixed;
             left: 0; transition: transform 0.3s ease;
-            z-index: 100; box-sizing: border-box; overflow-y: auto;
+            z-index: 100; box-sizing: border-box;
         }
 
         #sidebar.hidden { transform: translateX(-100%); }
 
         #main-content {
-            margin-left: var(--sidebar-width); padding: 20px;
+            margin-left: var(--sidebar-width); padding: 40px 20px;
             width: calc(100% - var(--sidebar-width)); transition: all 0.3s ease;
             display: flex; justify-content: center;
         }
 
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* AREA DE IMPRESIÓN (VERTICAL) */
+        /* AREA DE CAPTURA PDF */
         #capture-area { 
             background: white; 
-            padding: 20px; 
-            width: 790px; /* Ancho optimizado para PDF vertical */
-            min-height: 1000px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 15mm; 
+            width: 190mm; /* Ancho estándar A4/Carta aproximado */
+            min-height: 250mm;
+            box-sizing: border-box;
         }
 
-        /* Encabezado */
         .header-institucional { 
             display: flex; 
             justify-content: space-between; 
             align-items: center; 
             text-align: center; 
-            margin-bottom: 15px; 
+            margin-bottom: 20px; 
         }
-        .header-institucional img { height: 110px; width: auto; } /* Logos más grandes */
+        .header-institucional img { height: 100px; width: auto; }
         
-        .header-text h1 { font-size: 1.1rem; margin: 2px 0; font-weight: bold; }
-        .header-text h2 { font-size: 0.9rem; margin: 2px 0; }
-        .header-text h3 { font-size: 1rem; margin: 5px 0; border-bottom: 2px solid black; display: inline-block; padding: 0 10px; }
+        .header-text h1 { font-size: 14pt; margin: 2px 0; font-weight: bold; }
+        .header-text h2 { font-size: 11pt; margin: 2px 0; }
+        .header-text h3 { font-size: 12pt; margin: 5px 0; border-bottom: 2px solid black; display: inline-block; padding: 0 10px; }
 
-        /* Cuadrícula */
+        /* Cuadrícula Estilo Tabla */
         .schedule-grid {
             display: grid; 
-            grid-template-columns: 100px repeat(6, 1fr);
-            background: var(--border); /* El gap de 1px mostrará este color como borde */
+            grid-template-columns: 90px repeat(6, 1fr);
+            background: var(--border-color);
             gap: 1px; 
-            border: 1px solid var(--border);
+            border: 1px solid var(--border-color);
         }
 
         .grid-header { 
-            background: #ffffff; padding: 8px; 
-            text-align: center; font-weight: bold; font-size: 0.7rem; 
+            background: #ffffff; padding: 10px 5px; 
+            text-align: center; font-weight: bold; font-size: 9pt; 
         }
 
         .time-label { 
-            background: #ffffff; font-size: 0.65rem; font-weight: bold; 
+            background: #ffffff; font-size: 8pt; font-weight: bold; 
             display: flex; align-items: center; justify-content: center;
-            text-align: center; padding: 2px;
+            text-align: center; line-height: 1.2;
         }
 
-        /* Celdas del horario */
         .time-slot { 
             background: #fff; 
-            height: 75px; /* Altura fija para estética */
-            padding: 0; /* Sin padding para que la materia llene todo */
+            height: 65px; 
+            padding: 0;
             position: relative;
-            overflow: hidden;
         }
 
         .recreo-row {
-            background: #f0f0f0 !important; color: #000; font-weight: bold;
+            background: #eeeeee !important; color: #000; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
-            grid-column: span 6; font-size: 0.8rem; letter-spacing: 10px;
+            grid-column: span 6; font-size: 10pt; letter-spacing: 8px;
         }
 
         /* MATERIAS */
         .materia-card {
             width: 100%; 
-            height: 100%; /* Llenar la celda */
+            height: 100%; 
             color: white;
             cursor: grab;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            position: relative;
+            font-weight: bold;
             box-sizing: border-box;
-            padding: 5px;
+            padding: 4px;
+            user-select: none; /* No permite seleccionar texto mientras arrastras */
         }
 
-        /* Materia dentro del pool (lateral) */
+        /* Materia en el lateral */
         #materia-pool .materia-card {
-            height: 50px;
-            margin-bottom: 10px;
-            border-radius: 4px;
+            height: 45px; margin-bottom: 8px; border-radius: 4px;
         }
 
         .delete-btn {
-            position: absolute; top: 2px; right: 2px;
-            background: rgba(0,0,0,0.3); color: white; border-radius: 50%;
+            position: absolute; top: 1px; right: 1px;
+            background: rgba(0,0,0,0.5); color: white; border-radius: 50%;
             width: 16px; height: 16px; display: flex;
             align-items: center; justify-content: center;
-            font-size: 10px; cursor: pointer;
+            font-size: 10px; cursor: pointer; border: none;
         }
 
-        .input-group { margin-bottom: 12px; display: flex; flex-direction: column; }
-        .input-group label { font-size: 0.75rem; color: #cbd5e1; margin-bottom: 3px; }
+        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .input-group label { font-size: 12px; color: #cbd5e1; margin-bottom: 5px; }
+        .input-group input { padding: 8px; border-radius: 4px; border: none; }
 
         .no-export { display: none !important; }
     </style>
@@ -157,23 +154,22 @@
 </div>
 
 <div id="sidebar">
-    <h3 style="margin-top:0">Configuración</h3>
+    <h2 style="font-size: 1.2rem; margin-top:0">Configuración</h2>
     <div class="input-group">
-        <label>Materia:</label>
-        <input type="text" id="materiaName" placeholder="Nombre...">
+        <label>Nombre de Materia:</label>
+        <input type="text" id="materiaName" placeholder="Ej: Química">
     </div>
     <div class="input-group">
         <label>Color:</label>
-        <input type="color" id="materiaColor" value="#3b82f6" style="width:100%; height:30px; border:none; padding:0">
+        <input type="color" id="materiaColor" value="#3498db" style="width:100%; height:35px; border:none; padding:0">
     </div>
     <div class="input-group">
-        <label>Tamaño Fuente (px):</label>
-        <input type="number" id="materiaFontSize" value="11">
+        <label>Tamaño Letra (px):</label>
+        <input type="number" id="materiaFontSize" value="12">
     </div>
-    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Añadir al Panel</button>
+    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Guardar en Panel</button>
     
-    <div id="materia-pool"></div>
-    <p style="font-size: 10px; color: #94a3b8; margin-top: 15px;">Las materias se copian al arrastrar.</p>
+    <div id="materia-pool" style="margin-top:20px; overflow-y:auto; max-height: 50vh; border: 1px dashed #475569; padding: 10px;"></div>
 </div>
 
 <div id="main-content">
@@ -197,7 +193,7 @@
             <div class="grid-header">JUEVES</div>
             <div class="grid-header">VIERNES</div>
             <div class="grid-header">SÁBADO</div>
-            </div>
+        </div>
     </div>
 </div>
 
@@ -238,7 +234,7 @@
                     onAdd: function (evt) {
                         const item = evt.item;
                         if (!item.querySelector('.delete-btn')) {
-                            const btn = document.createElement('span');
+                            const btn = document.createElement('button');
                             btn.className = 'delete-btn';
                             btn.innerHTML = '×';
                             btn.onclick = function() { item.remove(); };
@@ -266,7 +262,7 @@
         card.className = 'materia-card';
         card.style.backgroundColor = color;
         card.style.fontSize = size + "px";
-        card.innerHTML = `<span contenteditable="true" style="width:100%">${name}</span>`;
+        card.innerText = name; // Ya no es editable para evitar errores de arrastre
         
         document.getElementById('materia-pool').appendChild(card);
         document.getElementById('materiaName').value = "";
@@ -274,15 +270,22 @@
 
     function exportarPDF() {
         const elemento = document.getElementById('capture-area');
+        
+        // Ocultar X antes de exportar
         const botonesBorrar = document.querySelectorAll('.delete-btn');
         botonesBorrar.forEach(btn => btn.classList.add('no-export'));
 
         const opciones = {
-            margin: 5,
-            filename: 'Horario_Escolar_AQR.pdf',
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 3, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' } // VERTICAL
+            margin:       [10, 5, 10, 5],
+            filename:     'Horario_AQR.pdf',
+            image:        { type: 'jpeg', quality: 1.0 },
+            html2canvas:  { 
+                scale: 4, 
+                useCORS: true, 
+                letterRendering: true,
+                dpi: 300
+            },
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
 
         html2pdf().set(opciones).from(elemento).save().then(() => {
