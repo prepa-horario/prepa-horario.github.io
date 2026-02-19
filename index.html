@@ -3,185 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Horario Dinámico</title>
+    <title>Horario Escolar Dinámico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root {
-            --bg-color: #f4f7f6;
-            --sidebar-width: 250px;
-            --border-color: #ddd;
+            --bg-sidebar: #1e293b;
+            --bg-grid: #f8fafc;
+            --border: #e2e8f0;
+            --accent: #3b82f6;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             display: flex;
             margin: 0;
-            background-color: var(--bg-color);
+            background: var(--bg-grid);
+            color: #1e293b;
         }
 
-        /* Lateral / Sidebar */
+        /* Sidebar */
         #sidebar {
-            width: var(--sidebar-width);
+            width: 280px;
             height: 100vh;
-            background: #2c3e50;
+            background: var(--bg-sidebar);
             color: white;
-            padding: 20px;
-            box-sizing: border-box;
+            padding: 25px;
             position: fixed;
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
         }
 
-        .controls input, .controls button {
+        .input-group { margin-bottom: 20px; }
+        input[type="text"] {
             width: 100%;
-            margin-bottom: 10px;
-            padding: 8px;
-            border-radius: 4px;
+            padding: 10px;
+            border-radius: 6px;
             border: none;
+            margin-top: 5px;
         }
-
-        .controls button {
-            background: #27ae60;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        /* Contenedor Principal */
-        #main-content {
-            margin-left: var(--sidebar-width);
-            padding: 40px;
+        input[type="color"] {
             width: 100%;
+            height: 40px;
+            border: none;
+            cursor: pointer;
+            background: none;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: var(--accent);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+
+        /* Pool de materias */
+        #materia-pool {
+            margin-top: 20px;
+            min-height: 150px;
+            border: 2px dashed #475569;
+            border-radius: 8px;
+            padding: 10px;
         }
 
-        /* La Cuadrícula */
+        /* Grid */
+        #main-content { margin-left: 280px; padding: 40px; width: 100%; }
+        
         .schedule-grid {
             display: grid;
-            grid-template-columns: 80px repeat(5, 1fr); /* Horas + 5 días */
+            grid-template-columns: 140px repeat(5, 1fr);
             gap: 1px;
-            background-color: var(--border-color);
-            border: 1px solid var(--border-color);
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
         .grid-header {
-            background: #ecf0f1;
+            background: #f1f5f9;
             padding: 15px;
             text-align: center;
-            font-weight: bold;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+
+        .time-label {
+            background: #fff;
+            padding: 15px 10px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 2px solid var(--border);
         }
 
         .time-slot {
             background: #fff;
-            min-height: 60px;
-            padding: 5px;
-            position: relative;
+            min-height: 70px;
+            padding: 8px;
+            transition: background 0.2s;
         }
 
-        .time-label {
-            background: #ecf0f1;
+        /* Estilo Recreo */
+        .recreo-row {
+            background: #fee2e2 !important;
+            color: #b91c1c;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8em;
+            grid-column: span 5;
+            pointer-events: none; /* No se puede soltar nada aquí */
         }
 
-        /* Las Materias (Cards) */
+        /* Materias */
         .materia-card {
-            background: #3498db;
+            padding: 12px;
+            border-radius: 6px;
             color: white;
-            padding: 10px;
-            border-radius: 4px;
-            margin-bottom: 5px;
             cursor: grab;
-            font-size: 0.9em;
+            font-size: 0.85rem;
+            font-weight: 500;
+            position: relative;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-
-        .materia-card:active { cursor: grabbing; }
-        
         .delete-btn {
-            float: right;
+            position: absolute;
+            top: 2px;
+            right: 5px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 12px;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
 <div id="sidebar">
-    <h3>Nueva Materia</h3>
-    <div class="controls">
-        <input type="text" id="materiaName" placeholder="Nombre de la materia...">
-        <label>Color:</label>
-        <input type="color" id="materiaColor" value="#3498db">
-        <button onclick="addNewMateria()">+ Crear Materia</button>
+    <h2>Panel</h2>
+    <div class="input-group">
+        <label>Materia:</label>
+        <input type="text" id="materiaName" placeholder="Ej: Matemáticas">
     </div>
-    <hr>
-    <p><small>Arrastra las materias a cualquier celda del horario.</small></p>
-    <div id="materia-pool" style="min-height: 100px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 5px;">
+    <div class="input-group">
+        <label>Color:</label>
+        <input type="color" id="materiaColor" value="#3b82f6">
+    </div>
+    <button onclick="addNewMateria()">Crear Cuadro</button>
+    
+    <div id="materia-pool">
         </div>
 </div>
 
 <div id="main-content">
     <div class="schedule-grid" id="grid">
-        <div class="grid-header">Hora</div>
+        <div class="grid-header">Intervalo</div>
         <div class="grid-header">Lunes</div>
         <div class="grid-header">Martes</div>
         <div class="grid-header">Miércoles</div>
         <div class="grid-header">Jueves</div>
         <div class="grid-header">Viernes</div>
-
         </div>
 </div>
 
 <script>
-    const hours = ["7:00", "8:00", "9:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
     const grid = document.getElementById('grid');
+    
+    // Configuración de los bloques
+    const bloques = [
+        "07:00 - 07:50",
+        "07:50 - 08:40",
+        "08:40 - 09:30",
+        "RECREO", // Caso especial
+        "10:00 - 10:50",
+        "10:50 - 11:40",
+        "11:40 - 12:30",
+        "12:30 - 13:20"
+    ];
 
-    // 1. Generar las celdas del horario
-    hours.forEach(hour => {
-        // Celda de hora
+    // Generar la interfaz
+    bloques.forEach(info => {
         const timeLabel = document.createElement('div');
         timeLabel.className = 'time-label';
-        timeLabel.innerText = hour;
+        timeLabel.innerText = info === "RECREO" ? "09:30 - 10:00" : info;
         grid.appendChild(timeLabel);
 
-        // 5 Celdas de días (L-V)
-        for (let i = 0; i < 5; i++) {
-            const slot = document.createElement('div');
-            slot.className = 'time-slot';
-            grid.appendChild(slot);
+        if (info === "RECREO") {
+            const recreoDiv = document.createElement('div');
+            recreoDiv.className = 'recreo-row';
+            recreoDiv.innerText = "RECREO (10 min)";
+            grid.appendChild(recreoDiv);
+        } else {
+            for (let i = 0; i < 5; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                grid.appendChild(slot);
 
-            // Hacer cada celda "sortable"
-            new Sortable(slot, {
-                group: 'shared', // Permite mover entre celdas
-                animation: 150
-            });
+                new Sortable(slot, {
+                    group: 'materias',
+                    animation: 150,
+                    ghostClass: 'blue-background-class'
+                });
+            }
         }
     });
 
-    // Inicializar el pool lateral
+    // Pool lateral
     new Sortable(document.getElementById('materia-pool'), {
-        group: 'shared',
+        group: 'materias',
         animation: 150
     });
 
-    // 2. Función para crear nuevas materias
     function addNewMateria() {
         const name = document.getElementById('materiaName').value;
         const color = document.getElementById('materiaColor').value;
-
-        if (name.trim() === "") return alert("Escribe un nombre");
+        if (!name) return;
 
         const card = document.createElement('div');
         card.className = 'materia-card';
         card.style.backgroundColor = color;
-        card.innerHTML = `
-            ${name} 
-            <span class="delete-btn" onclick="this.parentElement.remove()">×</span>
-        `;
-
+        card.innerHTML = `${name} <span class="delete-btn" onclick="this.parentElement.remove()">×</span>`;
+        
         document.getElementById('materia-pool').appendChild(card);
-        document.getElementById('materiaName').value = ""; // Limpiar input
+        document.getElementById('materiaName').value = "";
     }
 </script>
 
