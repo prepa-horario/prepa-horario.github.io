@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Escolar Personalizable</title>
+    <title>Horario Escolar - Exportar PDF</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
     <style>
         :root {
             --bg-sidebar: #1e293b;
@@ -23,12 +25,17 @@
             transition: all 0.3s ease;
         }
 
-        /* Botón para mostrar/ocultar Panel */
-        #toggle-btn {
+        /* Botones de control superiores */
+        .top-controls {
             position: fixed;
             left: 10px;
             top: 10px;
             z-index: 1000;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-ui {
             background: var(--accent);
             color: white;
             border: none;
@@ -39,51 +46,48 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
 
-        /* Sidebar Colapsable */
+        .btn-pdf { background: #e74c3c; }
+
+        /* Sidebar */
         #sidebar {
             width: var(--sidebar-width);
             height: 100vh;
             background: var(--bg-sidebar);
             color: white;
-            padding: 60px 25px 25px 25px;
+            padding: 70px 25px 25px 25px;
             position: fixed;
             left: 0;
             transition: transform 0.3s ease;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
             z-index: 100;
             box-sizing: border-box;
             overflow-y: auto;
         }
 
-        #sidebar.hidden {
-            transform: translateX(-100%);
-        }
+        #sidebar.hidden { transform: translateX(-100%); }
 
-        /* Contenido Principal Ajustable */
         #main-content {
             margin-left: var(--sidebar-width);
             padding: 20px;
             width: calc(100% - var(--sidebar-width));
-            transition: margin-left 0.3s ease, width 0.3s ease;
+            transition: all 0.3s ease;
         }
 
-        #main-content.full-width {
-            margin-left: 0;
-            width: 100%;
+        #main-content.full-width { margin-left: 0; width: 100%; }
+
+        /* Área que será exportada al PDF */
+        #capture-area {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            min-width: 800px; /* Asegura que no se deforme al exportar */
         }
 
         .input-group { margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 10px; border-radius: 6px; border: none; margin-top: 5px; box-sizing: border-box;}
-        input[type="color"] { width: 100%; height: 40px; border: none; cursor: pointer; background: none; }
+        input[type="text"] { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #475569; margin-top: 5px; }
         
-        .btn-crear {
-            width: 100%; padding: 12px; background: var(--accent); border: none;
-            color: white; border-radius: 6px; font-weight: 600; cursor: pointer;
-        }
-
         #materia-pool {
-            margin-top: 20px; min-height: 100px; border: 2px dashed #475569;
-            border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px;
+            margin-top: 20px; min-height: 80px; border: 2px dashed #475569;
+            border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px;
         }
 
         /* Encabezado */
@@ -93,144 +97,117 @@
             align-items: center;
             text-align: center;
             margin-bottom: 20px;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
         }
 
-        .header-institucional img { height: 90px; width: auto; }
+        .header-institucional img { height: 80px; width: auto; }
         
-        /* Estilo para textos editables */
-        .editable-text {
-            outline: none;
-            padding: 2px 5px;
-            transition: background 0.2s;
-            border: 1px transparent dashed;
-        }
-        .editable-text:hover {
-            background: #f0f9ff;
-            border-color: var(--accent);
-        }
+        .editable-text { outline: none; transition: background 0.2s; }
+        .editable-text:hover { background: #f0f9ff; }
 
-        .header-text h1 { font-size: 1.2rem; margin: 2px 0; color: #000; }
-        .header-text h2 { font-size: 1rem; margin: 2px 0; font-weight: bold; color: #333;}
-        .header-text h3 { font-size: 1.1rem; margin: 10px 0; color: #444; border-bottom: 2px solid #000; display: inline-block; padding: 0 20px;}
+        .header-text h1 { font-size: 1.1rem; margin: 2px 0; color: #000; }
+        .header-text h2 { font-size: 0.95rem; margin: 2px 0; font-weight: bold; }
+        .header-text h3 { font-size: 1rem; margin: 10px 0; border-bottom: 2px solid #000; display: inline-block; padding: 0 15px;}
 
-        /* Grid de Horario */
+        /* Grid */
         .schedule-grid {
             display: grid;
-            grid-template-columns: 120px repeat(6, 1fr);
+            grid-template-columns: 110px repeat(6, 1fr);
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
-            background-color: white;
         }
 
         .grid-header {
             background: #f8fafc; padding: 10px;
             text-align: center; font-weight: 700;
-            border-bottom: 2px solid var(--border);
-            font-size: 0.8rem;
+            font-size: 0.75rem;
         }
 
         .time-label {
-            background: #f8fafc; padding: 15px 5px;
-            font-size: 0.75rem; font-weight: bold;
+            background: #f8fafc; font-size: 0.7rem; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
-            border-right: 1px solid var(--border);
         }
 
-        .time-slot { background: #fff; min-height: 65px; padding: 5px; }
+        .time-slot { background: #fff; min-height: 60px; padding: 4px; }
 
         .recreo-row {
             background: #fef2f2 !important; color: #b91c1c;
             font-weight: bold; display: flex; align-items: center;
             justify-content: center; grid-column: span 6;
-            font-size: 0.9rem; letter-spacing: 2px;
+            font-size: 0.8rem; letter-spacing: 3px;
         }
 
         /* Materias */
         .materia-card {
-            padding: 10px; border-radius: 4px; color: white;
-            cursor: grab; font-size: 0.8rem; font-weight: bold;
+            padding: 8px; border-radius: 4px; color: white;
+            cursor: grab; font-size: 0.75rem; font-weight: bold;
             position: relative; text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .delete-btn {
             position: absolute; top: -5px; right: -5px;
             background: #000; color: white; border-radius: 50%;
-            width: 18px; height: 18px; display: flex;
+            width: 16px; height: 16px; display: flex;
             align-items: center; justify-content: center;
-            font-size: 12px; cursor: pointer; opacity: 0.7;
+            font-size: 10px; cursor: pointer;
         }
-        .delete-btn:hover { opacity: 1; }
 
-        @media print {
-            #sidebar, #toggle-btn, .delete-btn { display: none; }
-            #main-content { margin-left: 0; width: 100%; padding: 0; }
-            body { background: white; }
-        }
+        /* Ocultar elementos al generar PDF */
+        .no-export { display: none !important; }
     </style>
 </head>
 <body>
 
-<button id="toggle-btn" onclick="toggleSidebar()">☰ Panel</button>
+<div class="top-controls">
+    <button class="btn-ui" onclick="toggleSidebar()">☰ Panel</button>
+    <button class="btn-ui btn-pdf" onclick="exportarPDF()">⬇ Descargar PDF</button>
+</div>
 
 <div id="sidebar">
-    <h3>Configuración</h3>
+    <h3>Nueva Materia</h3>
     <div class="input-group">
-        <label>Nombre Materia:</label>
-        <input type="text" id="materiaName" placeholder="Escriba aquí...">
+        <input type="text" id="materiaName" placeholder="Nombre...">
+        <input type="color" id="materiaColor" value="#3b82f6" style="margin-top:10px">
     </div>
-    <div class="input-group">
-        <label>Color:</label>
-        <input type="color" id="materiaColor" value="#3b82f6">
-    </div>
-    <button class="btn-crear" onclick="addNewMateria()">+ Crear Materia</button>
-    
-    <div id="materia-pool">
-        </div>
-    <p style="font-size: 11px; margin-top: 20px; opacity: 0.7;">* Haz clic en los textos del horario para editarlos directamente.</p>
+    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Crear</button>
+    <div id="materia-pool"></div>
 </div>
 
 <div id="main-content">
-    <div class="header-institucional">
-        <img src="AQR.jpg" alt="Logo AQR">
-        <div class="header-text">
-            <h1 class="editable-text" contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
-            <h1 class="editable-text" contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
-            <h2 class="editable-text" contenteditable="true">HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
-            <h3 class="editable-text" contenteditable="true">2° A INFORMÁTICA</h3>
+    <div id="capture-area">
+        <div class="header-institucional">
+            <img src="AQR.jpg" alt="Logo AQR">
+            <div class="header-text">
+                <h1 class="editable-text" contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
+                <h1 class="editable-text" contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
+                <h2 class="editable-text" contenteditable="true">HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
+                <h3 class="editable-text" contenteditable="true">2° A INFORMÁTICA</h3>
+            </div>
+            <img src="DRAGONES.jpg" alt="Logo Dragones">
         </div>
-        <img src="DRAGONES.jpg" alt="Logo Dragones">
-    </div>
 
-    <div class="schedule-grid" id="grid">
-        <div class="grid-header">HORA</div>
-        <div class="grid-header">LUNES</div>
-        <div class="grid-header">MARTES</div>
-        <div class="grid-header">MIÉRCOLES</div>
-        <div class="grid-header">JUEVES</div>
-        <div class="grid-header">VIERNES</div>
-        <div class="grid-header">SÁBADO</div>
+        <div class="schedule-grid" id="grid">
+            <div class="grid-header">HORA</div>
+            <div class="grid-header">LUNES</div>
+            <div class="grid-header">MARTES</div>
+            <div class="grid-header">MIÉRCOLES</div>
+            <div class="grid-header">JUEVES</div>
+            <div class="grid-header">VIERNES</div>
+            <div class="grid-header">SÁBADO</div>
+        </div>
     </div>
 </div>
 
 <script>
     function toggleSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        const main = document.getElementById('main-content');
-        sidebar.classList.toggle('hidden');
-        main.classList.toggle('full-width');
+        document.getElementById('sidebar').classList.toggle('hidden');
+        document.getElementById('main-content').classList.toggle('full-width');
     }
 
+    // Generar Cuadrícula
     const grid = document.getElementById('grid');
-    const bloques = [
-        "07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30",
-        "RECREO", 
-        "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20"
-    ];
+    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECREO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20"];
 
     bloques.forEach(info => {
         const timeLabel = document.createElement('div');
@@ -267,6 +244,28 @@
         
         document.getElementById('materia-pool').appendChild(card);
         nameInput.value = "";
+    }
+
+    // --- FUNCIÓN PARA DESCARGAR PDF ---
+    function exportarPDF() {
+        const elemento = document.getElementById('capture-area');
+        
+        // Ocultamos temporalmente las X de eliminar para que no salgan en el PDF
+        const botonesBorrar = document.querySelectorAll('.delete-btn');
+        botonesBorrar.forEach(btn => btn.classList.add('no-export'));
+
+        const opciones = {
+            margin:       10,
+            filename:     'Horario_Escolar.pdf',
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true }, // scale 2 para mejor resolución
+            jsPDF:        { unit: 'mm', format: 'letter', orientation: 'landscape' } // Horizontal para que quepa el sábado
+        };
+
+        html2pdf().set(opciones).from(elemento).save().then(() => {
+            // Volvemos a mostrar las X después de generar el PDF
+            botonesBorrar.forEach(btn => btn.classList.remove('no-export'));
+        });
     }
 </script>
 
