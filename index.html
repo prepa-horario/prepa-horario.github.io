@@ -3,27 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Escolar - Pro</title>
+    <title>Horario Escolar - Formato Vertical</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         :root {
             --bg-sidebar: #1e293b;
-            --bg-grid: #ffffff;
-            --border: #cbd5e1;
+            --border: #000000; /* Borde negro para que resalte */
             --accent: #3b82f6;
             --sidebar-width: 280px;
         }
 
         body {
-            font-family: Arial, sans-serif; /* Fuente base Arial */
+            font-family: Arial, sans-serif;
             display: flex;
             margin: 0;
             background: #f1f5f9;
-            transition: all 0.3s ease;
         }
 
+        /* Controles */
         .top-controls {
             position: fixed; left: 10px; top: 10px;
             z-index: 1000; display: flex; gap: 10px;
@@ -37,6 +36,7 @@
 
         .btn-pdf { background: #e74c3c; }
 
+        /* Sidebar */
         #sidebar {
             width: var(--sidebar-width); height: 100vh;
             background: var(--bg-sidebar); color: white;
@@ -50,62 +50,101 @@
         #main-content {
             margin-left: var(--sidebar-width); padding: 20px;
             width: calc(100% - var(--sidebar-width)); transition: all 0.3s ease;
+            display: flex; justify-content: center;
         }
 
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        #capture-area { background: white; padding: 30px; border-radius: 8px; min-width: 900px; }
-
-        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-        .input-group label { font-size: 0.8rem; margin-bottom: 5px; color: #cbd5e1; }
-        input[type="text"], input[type="number"] { 
-            padding: 8px; border-radius: 4px; border: none; font-family: Arial;
+        /* AREA DE IMPRESIÓN (VERTICAL) */
+        #capture-area { 
+            background: white; 
+            padding: 20px; 
+            width: 790px; /* Ancho optimizado para PDF vertical */
+            min-height: 1000px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
+
+        /* Encabezado */
+        .header-institucional { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            text-align: center; 
+            margin-bottom: 15px; 
+        }
+        .header-institucional img { height: 110px; width: auto; } /* Logos más grandes */
         
-        #materia-pool {
-            margin-top: 20px; min-height: 100px; border: 2px dashed #475569;
-            border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px;
-        }
+        .header-text h1 { font-size: 1.1rem; margin: 2px 0; font-weight: bold; }
+        .header-text h2 { font-size: 0.9rem; margin: 2px 0; }
+        .header-text h3 { font-size: 1rem; margin: 5px 0; border-bottom: 2px solid black; display: inline-block; padding: 0 10px; }
 
-        /* Estilos de la Cuadrícula */
-        .header-institucional { display: flex; justify-content: space-between; align-items: center; text-align: center; margin-bottom: 20px; }
-        .header-institucional img { height: 80px; }
-        .header-text h1 { font-size: 1.1rem; margin: 2px 0; font-family: Arial; font-weight: bold; }
-        .header-text h2 { font-size: 0.95rem; margin: 2px 0; font-family: Arial; }
-
+        /* Cuadrícula */
         .schedule-grid {
-            display: grid; grid-template-columns: 110px repeat(6, 1fr);
-            gap: 1px; background: var(--border); border: 1px solid var(--border);
+            display: grid; 
+            grid-template-columns: 100px repeat(6, 1fr);
+            background: var(--border); /* El gap de 1px mostrará este color como borde */
+            gap: 1px; 
+            border: 1px solid var(--border);
         }
 
-        .grid-header { background: #f8fafc; padding: 10px; text-align: center; font-weight: bold; font-size: 0.75rem; }
-        .time-label { background: #f8fafc; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        .time-slot { background: #fff; min-height: 65px; padding: 5px; }
+        .grid-header { 
+            background: #ffffff; padding: 8px; 
+            text-align: center; font-weight: bold; font-size: 0.7rem; 
+        }
+
+        .time-label { 
+            background: #ffffff; font-size: 0.65rem; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; padding: 2px;
+        }
+
+        /* Celdas del horario */
+        .time-slot { 
+            background: #fff; 
+            height: 75px; /* Altura fija para estética */
+            padding: 0; /* Sin padding para que la materia llene todo */
+            position: relative;
+            overflow: hidden;
+        }
 
         .recreo-row {
-            background: #fef2f2 !important; color: #b91c1c; font-weight: bold;
+            background: #f0f0f0 !important; color: #000; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
-            grid-column: span 6; font-size: 0.8rem; letter-spacing: 5px;
+            grid-column: span 6; font-size: 0.8rem; letter-spacing: 10px;
         }
 
-        /* MATERIAS CREADAS */
+        /* MATERIAS */
         .materia-card {
-            padding: 8px; border-radius: 4px; color: white;
-            cursor: grab; font-family: Arial, sans-serif;
-            position: relative; text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            word-wrap: break-word;
+            width: 100%; 
+            height: 100%; /* Llenar la celda */
+            color: white;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            box-sizing: border-box;
+            padding: 5px;
         }
 
-        .materia-card span[contenteditable="true"] { outline: none; display: block; width: 100%; }
+        /* Materia dentro del pool (lateral) */
+        #materia-pool .materia-card {
+            height: 50px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
 
         .delete-btn {
-            position: absolute; top: -5px; right: -5px;
-            background: #000; color: white; border-radius: 50%;
+            position: absolute; top: 2px; right: 2px;
+            background: rgba(0,0,0,0.3); color: white; border-radius: 50%;
             width: 16px; height: 16px; display: flex;
             align-items: center; justify-content: center;
-            font-size: 10px; cursor: pointer; z-index: 10;
+            font-size: 10px; cursor: pointer;
         }
+
+        .input-group { margin-bottom: 12px; display: flex; flex-direction: column; }
+        .input-group label { font-size: 0.75rem; color: #cbd5e1; margin-bottom: 3px; }
 
         .no-export { display: none !important; }
     </style>
@@ -118,24 +157,23 @@
 </div>
 
 <div id="sidebar">
-    <h3>Configurar Materia</h3>
+    <h3 style="margin-top:0">Configuración</h3>
     <div class="input-group">
-        <label>Nombre:</label>
-        <input type="text" id="materiaName" placeholder="Ej: Matemáticas">
+        <label>Materia:</label>
+        <input type="text" id="materiaName" placeholder="Nombre...">
     </div>
     <div class="input-group">
         <label>Color:</label>
-        <input type="color" id="materiaColor" value="#3b82f6" style="width:100%; height:30px; border:none;">
+        <input type="color" id="materiaColor" value="#3b82f6" style="width:100%; height:30px; border:none; padding:0">
     </div>
     <div class="input-group">
-        <label>Tamaño de Letra (px):</label>
-        <input type="number" id="materiaFontSize" value="12" min="8" max="24">
+        <label>Tamaño Fuente (px):</label>
+        <input type="number" id="materiaFontSize" value="11">
     </div>
     <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Añadir al Panel</button>
     
-    <div id="materia-pool">
-        </div>
-    <p style="font-size: 10px; color: #94a3b8; margin-top: 15px;">* Arrastra las materias al horario. Se creará una copia automáticamente.</p>
+    <div id="materia-pool"></div>
+    <p style="font-size: 10px; color: #94a3b8; margin-top: 15px;">Las materias se copian al arrastrar.</p>
 </div>
 
 <div id="main-content">
@@ -146,7 +184,7 @@
                 <h1 contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
                 <h1 contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
                 <h2 contenteditable="true">HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
-                <h3 contenteditable="true" style="border-bottom: 2px solid black; display: inline-block; padding: 0 10px;">2° A INFORMÁTICA</h3>
+                <h3 contenteditable="true">2° A INFORMÁTICA</h3>
             </div>
             <img src="DRAGONES.jpg" alt="DRAGONES">
         </div>
@@ -159,7 +197,7 @@
             <div class="grid-header">JUEVES</div>
             <div class="grid-header">VIERNES</div>
             <div class="grid-header">SÁBADO</div>
-        </div>
+            </div>
     </div>
 </div>
 
@@ -170,7 +208,12 @@
     }
 
     const grid = document.getElementById('grid');
-    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECREO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20"];
+    const bloques = [
+        "07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30",
+        "RECREO", 
+        "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", 
+        "12:30 - 13:20", "13:20 - 14:10"
+    ];
 
     bloques.forEach(info => {
         const timeLabel = document.createElement('div');
@@ -193,7 +236,6 @@
                     group: 'materias', 
                     animation: 150,
                     onAdd: function (evt) {
-                        // Al soltar en el horario, le añadimos la X de borrar si no la tiene
                         const item = evt.item;
                         if (!item.querySelector('.delete-btn')) {
                             const btn = document.createElement('span');
@@ -208,30 +250,23 @@
         }
     });
 
-    // POOL LATERAL CON CLONACIÓN
     new Sortable(document.getElementById('materia-pool'), {
-        group: {
-            name: 'materias',
-            pull: 'clone', // <--- ESTO HACE QUE SE QUEDE EN EL PANEL
-            put: false    // No permite devolver materias al pool para no desordenar
-        },
+        group: { name: 'materias', pull: 'clone', put: false },
         animation: 150,
-        sort: false // No reordenar el pool
+        sort: false
     });
 
     function addNewMateria() {
         const name = document.getElementById('materiaName').value;
         const color = document.getElementById('materiaColor').value;
         const size = document.getElementById('materiaFontSize').value;
-        
         if (!name) return;
 
         const card = document.createElement('div');
         card.className = 'materia-card';
         card.style.backgroundColor = color;
         card.style.fontSize = size + "px";
-        // El nombre es editable por si quieres cambiarlo una vez puesto
-        card.innerHTML = `<span contenteditable="true">${name}</span>`;
+        card.innerHTML = `<span contenteditable="true" style="width:100%">${name}</span>`;
         
         document.getElementById('materia-pool').appendChild(card);
         document.getElementById('materiaName').value = "";
@@ -243,11 +278,11 @@
         botonesBorrar.forEach(btn => btn.classList.add('no-export'));
 
         const opciones = {
-            margin: 10,
-            filename: 'Horario_AQR.pdf',
+            margin: 5,
+            filename: 'Horario_Escolar_AQR.pdf',
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'landscape' }
+            html2canvas: { scale: 3, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' } // VERTICAL
         };
 
         html2pdf().set(opciones).from(elemento).save().then(() => {
