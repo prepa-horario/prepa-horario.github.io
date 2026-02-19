@@ -138,7 +138,7 @@
             font-weight: normal; 
         }
 
-        .recreo-row-style {
+        .recesso-row-style {
             background: #f5f5f5 !important;
             flex: 1;
             display: flex;
@@ -227,7 +227,7 @@
     }
 
     const container = document.getElementById('schedule-body');
-    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECREO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
+    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECESSO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
 
     bloques.forEach(info => {
         const row = document.createElement('div');
@@ -235,14 +235,14 @@
 
         const timeCell = document.createElement('div');
         timeCell.className = 'cell cell-time';
-        timeCell.innerText = info === "RECREO" ? "09:30 - 10:00" : info;
+        timeCell.innerText = info === "RECESSO" ? "09:30 - 10:00" : info;
         row.appendChild(timeCell);
 
-        if (info === "RECREO") {
-            const recreoCell = document.createElement('div');
-            recreoCell.className = 'recreo-row-style';
-            recreoCell.innerText = "RECREO";
-            row.appendChild(recreoCell);
+        if (info === "RECESSO") {
+            const recessoCell = document.createElement('div');
+            recessoCell.className = 'recesso-row-style';
+            recessoCell.innerText = "RECESSO";
+            row.appendChild(recessoCell);
         } else {
             for (let i = 0; i < 6; i++) {
                 const dayCell = document.createElement('div');
