@@ -52,12 +52,11 @@
             width: calc(100% - var(--sidebar-width)); 
             transition: all 0.3s ease;
             display: flex; 
-            justify-content: center; /* CENTRADO EN PANTALLA */
+            justify-content: center;
         }
 
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* LA COSA DEL PDF OMG JAJAJA */
         #capture-area { 
             background: white; 
             padding: 10mm; 
@@ -75,7 +74,6 @@
         .header-text h2 { font-size: 9pt; margin: 2px 0; font-weight: normal; }
         #grupo-titulo { font-size: 10pt; margin: 8px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 10px; outline: none; font-weight: bold; }
 
-        /* CUADRICULAS */
         .schedule-container {
             border: 1px solid var(--border-color);
             background: var(--border-color);
@@ -119,7 +117,6 @@
             justify-content: center;
         }
 
-        /* MATERIAS - FUENTE */
         .materia-card {
             width: 100%;
             display: flex;
@@ -148,6 +145,15 @@
             font-weight: bold;
             font-size: 9pt;
             min-height: 30px;
+        }
+
+        /* ESTILO DE LA FIRMA */
+        .signature {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 7pt;
+            color: #64748b;
+            font-style: italic;
         }
 
         #materia-pool .materia-card {
@@ -182,7 +188,7 @@
     <h2 style="font-size: 1rem; margin-top:0">Materias</h2>
     <div class="input-group">
         <label>Nombre De La Materia:</label>
-        <textarea id="materiaName" rows="3" placeholder="Herramienta hecha por iann, "DWTH""></textarea>
+        <textarea id="materiaName" rows="3" placeholder='Herramienta hecha por iann, "DWTH"'></textarea>
     </div>
     <div class="input-group">
         <label>Color:</label>
@@ -216,7 +222,9 @@
                 <div class="cell cell-header">VIERNES</div>
                 <div class="cell cell-header">SÁBADO</div>
             </div>
-        </div>
+            </div>
+
+        <div class="signature">Hecho por iann, "DTWH"</div>
     </div>
 </div>
 
