@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Escolar AQR - Auto-Ajuste Pro</title>
+    <title>Horario AQR - Ajuste Dinámico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -53,11 +53,11 @@
 
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* AREA DE CAPTURA PDF */
+        /* AREA DE CAPTURA */
         #capture-area { 
             background: white; 
             padding: 10mm; 
-            width: 200mm; 
+            width: 210mm; /* Ancho completo carta */
             box-sizing: border-box;
             margin: 0 auto;
         }
@@ -66,72 +66,97 @@
             display: flex; justify-content: space-between; align-items: center; 
             text-align: center; margin-bottom: 20px; 
         }
-        .header-institucional img { height: 90px; width: auto; }
-        
-        .header-text h1 { font-size: 13pt; margin: 2px 0; font-weight: bold; }
+        .header-institucional img { height: 85px; width: auto; }
+        .header-text h1 { font-size: 12pt; margin: 2px 0; font-weight: bold; }
         .header-text h2 { font-size: 10pt; margin: 2px 0; font-weight: normal; }
         #grupo-titulo { font-size: 11pt; margin: 8px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 15px; outline: none; font-weight: bold; }
 
-        /* Cuadrícula - CAMBIO CLAVE: auto-rows para que crezca */
-        .schedule-grid {
-            display: grid; 
-            grid-template-columns: 85px repeat(6, 1fr);
-            grid-auto-rows: minmax(65px, auto); /* Mínimo 65px, pero crece si hay mucho texto */
-            background: var(--border-color);
-            gap: 1px; 
+        /* CUADRÍCULA FLEXIBLE */
+        .schedule-container {
             border: 1px solid var(--border-color);
+            background: var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
         }
 
-        .grid-header { 
-            background: #ffffff; padding: 10px 2px; 
-            text-align: center; font-weight: bold; font-size: 8.5pt;
-            display: flex; align-items: center; justify-content: center;
+        .schedule-row {
+            display: flex;
+            background: var(--border-color);
+            gap: 1px;
+            min-height: 60px; /* Altura mínima base */
         }
 
-        .time-label { 
-            background: #ffffff; font-size: 7.5pt; font-weight: bold; 
-            display: flex; align-items: center; justify-content: center;
-            text-align: center; padding: 5px;
-        }
-
-        .time-slot { 
-            background: #fff; 
-            padding: 0;
+        .cell {
+            background: #ffffff;
+            flex: 1; /* Distribución igual para los días */
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
             position: relative;
-            display: flex; /* Para que la materia ocupe el alto de la fila expandida */
+            min-width: 0; /* Evita que el texto rompa el ancho */
         }
 
-        .recreo-row {
-            background: #f0f0f0 !important; color: #000; font-weight: bold;
-            display: flex; align-items: center; justify-content: center;
-            grid-column: span 6; font-size: 9pt; letter-spacing: 12px;
-            min-height: 30px;
+        .cell-time {
+            flex: 0 0 85px; /* Ancho fijo para la columna de horas */
+            background: #ffffff;
+            font-size: 8pt;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5px;
         }
 
-        /* MATERIAS - AJUSTE DINÁMICO */
+        .cell-header {
+            background: #ffffff;
+            font-weight: bold;
+            font-size: 9pt;
+            padding: 10px 0;
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* MATERIAS - ESTA ES LA CLAVE */
         .materia-card {
             width: 100%;
-            min-height: 100%; /* Se estira al alto de la fila */
-            color: white; cursor: grab;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             text-align: center;
-            box-sizing: border-box; 
-            padding: 6px; 
-            font-size: 9.5pt; /* Tamaño normal legible */
-            line-height: 1.1;
-            font-weight: normal;
-            word-wrap: break-word; 
+            padding: 12px 6px; /* Más padding vertical para que el cuadro crezca */
+            color: white;
+            font-size: 9.5pt;
+            line-height: 1.2;
+            word-wrap: break-word;
             overflow-wrap: break-word;
-            white-space: normal; /* Permite saltos de línea */
+            white-space: normal;
+            box-sizing: border-box;
+            cursor: grab;
+        }
+
+        .recreo-row-style {
+            background: #f4f4f4 !important;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 15px;
+            font-weight: bold;
+            font-size: 10pt;
+            min-height: 35px;
         }
 
         #materia-pool .materia-card {
-            height: auto; min-height: 40px; margin-bottom: 8px; border-radius: 4px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            min-height: 40px;
         }
 
         .delete-btn {
             position: absolute; top: 2px; right: 2px;
-            background: rgba(0,0,0,0.4); color: white; border: none;
+            background: rgba(0,0,0,0.3); color: white; border: none;
             border-radius: 50%; width: 16px; height: 16px; 
             font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;
             z-index: 10;
@@ -139,7 +164,7 @@
 
         .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
         .input-group label { font-size: 12px; color: #cbd5e1; margin-bottom: 5px; }
-        .input-group input, .input-group textarea { padding: 10px; border-radius: 4px; border: none; font-size: 13px; font-family: Arial; }
+        textarea { padding: 10px; border-radius: 4px; border: none; resize: vertical; font-family: Arial; }
 
         .no-export { display: none !important; }
     </style>
@@ -152,16 +177,16 @@
 </div>
 
 <div id="sidebar">
-    <h2 style="font-size: 1.2rem; margin-top:0">Configuración</h2>
+    <h2 style="font-size: 1.1rem; margin-top:0">Configuración</h2>
     <div class="input-group">
         <label>Nombre de Materia:</label>
-        <textarea id="materiaName" rows="3" placeholder="Ej: CONCIENCIA HISTÓRICA..."></textarea>
+        <textarea id="materiaName" rows="4" placeholder="Escribe aquí..."></textarea>
     </div>
     <div class="input-group">
         <label>Color:</label>
         <input type="color" id="materiaColor" value="#5dade2" style="width:100%; height:35px; border:none; padding:0; cursor:pointer">
     </div>
-    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Guardar en Lista</button>
+    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Crear Materia</button>
     
     <div id="materia-pool" style="margin-top:20px; overflow-y:auto; max-height: 50vh; border: 1px dashed #475569; padding: 10px;"></div>
 </div>
@@ -174,20 +199,22 @@
                 <h1 contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
                 <h1 contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
                 <h2 contenteditable="true">HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
-                <h3 id="grupo-titulo" contenteditable="true">2° A INFORMÁTICA</h3>
+                <h3 id="grupo-titulo" contenteditable="true">GRUPO Y ESPECIALIDAD</h3>
             </div>
             <img src="DRAGONES.jpg" alt="DRAGONES">
         </div>
 
-        <div class="schedule-grid" id="grid">
-            <div class="grid-header">HORA</div>
-            <div class="grid-header">LUNES</div>
-            <div class="grid-header">MARTES</div>
-            <div class="grid-header">MIÉRCOLES</div>
-            <div class="grid-header">JUEVES</div>
-            <div class="grid-header">VIERNES</div>
-            <div class="grid-header">SÁBADO</div>
-        </div>
+        <div class="schedule-container" id="schedule-body">
+            <div class="schedule-row">
+                <div class="cell cell-time cell-header">HORA</div>
+                <div class="cell cell-header">LUNES</div>
+                <div class="cell cell-header">MARTES</div>
+                <div class="cell cell-header">MIÉRCOLES</div>
+                <div class="cell cell-header">JUEVES</div>
+                <div class="cell cell-header">VIERNES</div>
+                <div class="cell cell-header">SÁBADO</div>
+            </div>
+            </div>
     </div>
 </div>
 
@@ -197,27 +224,35 @@
         document.getElementById('main-content').classList.toggle('full-width');
     }
 
-    const grid = document.getElementById('grid');
-    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECREO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
+    const container = document.getElementById('schedule-body');
+    const bloques = [
+        "07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30",
+        "RECREO", 
+        "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", 
+        "12:30 - 13:20", "13:20 - 14:10"
+    ];
 
     bloques.forEach(info => {
-        const timeLabel = document.createElement('div');
-        timeLabel.className = 'time-label';
-        timeLabel.innerText = info === "RECREO" ? "09:30 - 10:00" : info;
-        grid.appendChild(timeLabel);
+        const row = document.createElement('div');
+        row.className = 'schedule-row';
+
+        const timeCell = document.createElement('div');
+        timeCell.className = 'cell cell-time';
+        timeCell.innerText = info === "RECREO" ? "09:30 - 10:00" : info;
+        row.appendChild(timeCell);
 
         if (info === "RECREO") {
-            const recreoDiv = document.createElement('div');
-            recreoDiv.className = 'recreo-row';
-            recreoDiv.innerText = "RECREO";
-            grid.appendChild(recreoDiv);
+            const recreoCell = document.createElement('div');
+            recreoCell.className = 'recreo-row-style';
+            recreoCell.innerText = "RECREO";
+            row.appendChild(recreoCell);
         } else {
             for (let i = 0; i < 6; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'time-slot';
-                grid.appendChild(slot);
+                const dayCell = document.createElement('div');
+                dayCell.className = 'cell';
+                row.appendChild(dayCell);
                 
-                new Sortable(slot, { 
+                new Sortable(dayCell, { 
                     group: 'materias', 
                     animation: 150,
                     onAdd: function (evt) {
@@ -233,6 +268,7 @@
                 });
             }
         }
+        container.appendChild(row);
     });
 
     new Sortable(document.getElementById('materia-pool'), {
@@ -262,10 +298,10 @@
         botonesBorrar.forEach(btn => btn.classList.add('no-export'));
 
         const opciones = {
-            margin: [10, 5, 10, 5],
+            margin: [5, 0, 5, 0],
             filename: `Horario_${nombreGrupo}.pdf`,
             image: { type: 'jpeg', quality: 1.0 },
-            html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+            html2canvas: { scale: 3, useCORS: true },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
 
