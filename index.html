@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario AQR - Versión Final</title>
+    <title>Generador de Horario AQR</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -22,7 +22,7 @@
             background: #f1f5f9;
         }
 
-        /* Botones superiores */
+        /* Controles de Interfaz */
         .top-controls {
             position: fixed; left: 10px; top: 10px;
             z-index: 1000; display: flex; gap: 10px;
@@ -36,7 +36,6 @@
 
         .btn-pdf { background: #e74c3c; }
 
-        /* Sidebar */
         #sidebar {
             width: var(--sidebar-width); height: 100vh;
             background: var(--bg-sidebar); color: white;
@@ -48,100 +47,90 @@
         #sidebar.hidden { transform: translateX(-100%); }
 
         #main-content {
-            margin-left: var(--sidebar-width); padding: 40px 20px;
+            margin-left: var(--sidebar-width); padding: 20px;
             width: calc(100% - var(--sidebar-width)); transition: all 0.3s ease;
-            display: flex; justify-content: center;
+            display: flex; justify-content: center; align-items: flex-start;
         }
 
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* AREA DE CAPTURA PDF */
+        /* AREA DE CAPTURA (Centrada para PDF) */
         #capture-area { 
             background: white; 
-            padding: 15mm; 
-            width: 190mm; /* Ancho estándar A4/Carta aproximado */
-            min-height: 250mm;
+            padding: 10mm; 
+            width: 200mm; /* Ajuste para centrado en Letter/A4 */
+            min-height: 260mm;
             box-sizing: border-box;
+            margin: 0 auto;
         }
 
         .header-institucional { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            text-align: center; 
-            margin-bottom: 20px; 
+            display: flex; justify-content: space-between; align-items: center; 
+            text-align: center; margin-bottom: 20px; 
         }
-        .header-institucional img { height: 100px; width: auto; }
+        .header-institucional img { height: 95px; width: auto; }
         
-        .header-text h1 { font-size: 14pt; margin: 2px 0; font-weight: bold; }
-        .header-text h2 { font-size: 11pt; margin: 2px 0; }
-        .header-text h3 { font-size: 12pt; margin: 5px 0; border-bottom: 2px solid black; display: inline-block; padding: 0 10px; }
+        .header-text h1 { font-size: 13pt; margin: 2px 0; font-weight: bold; }
+        .header-text h2 { font-size: 10pt; margin: 2px 0; }
+        #grupo-titulo { font-size: 11pt; margin: 5px 0; border-bottom: 2px solid black; display: inline-block; padding: 0 15px; outline: none; }
 
-        /* Cuadrícula Estilo Tabla */
+        /* Cuadrícula */
         .schedule-grid {
             display: grid; 
-            grid-template-columns: 90px repeat(6, 1fr);
+            grid-template-columns: 85px repeat(6, 1fr);
             background: var(--border-color);
             gap: 1px; 
             border: 1px solid var(--border-color);
         }
 
         .grid-header { 
-            background: #ffffff; padding: 10px 5px; 
-            text-align: center; font-weight: bold; font-size: 9pt; 
+            background: #ffffff; padding: 8px 2px; 
+            text-align: center; font-weight: bold; font-size: 8.5pt; 
         }
 
         .time-label { 
-            background: #ffffff; font-size: 8pt; font-weight: bold; 
+            background: #ffffff; font-size: 7.5pt; font-weight: bold; 
             display: flex; align-items: center; justify-content: center;
-            text-align: center; line-height: 1.2;
+            text-align: center; line-height: 1.1;
         }
 
         .time-slot { 
-            background: #fff; 
-            height: 65px; 
-            padding: 0;
-            position: relative;
+            background: #fff; height: 60px; padding: 0;
+            position: relative; overflow: hidden;
         }
 
         .recreo-row {
-            background: #eeeeee !important; color: #000; font-weight: bold;
+            background: #f2f2f2 !important; color: #000; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
-            grid-column: span 6; font-size: 10pt; letter-spacing: 8px;
+            grid-column: span 6; font-size: 9pt; letter-spacing: 10px;
         }
 
-        /* MATERIAS */
+        /* MATERIAS CON TEXTO AUTO-AJUSTABLE */
         .materia-card {
-            width: 100%; 
-            height: 100%; 
-            color: white;
-            cursor: grab;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            font-weight: bold;
-            box-sizing: border-box;
-            padding: 4px;
-            user-select: none; /* No permite seleccionar texto mientras arrastras */
+            width: 100%; height: 100%; 
+            color: white; cursor: grab;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; font-weight: bold;
+            box-sizing: border-box; padding: 5px;
+            word-wrap: break-word; overflow: hidden;
+            font-size: 11px; /* Tamaño base que se adapta al contenedor */
+            line-height: 1.1;
         }
 
-        /* Materia en el lateral */
         #materia-pool .materia-card {
             height: 45px; margin-bottom: 8px; border-radius: 4px;
         }
 
         .delete-btn {
             position: absolute; top: 1px; right: 1px;
-            background: rgba(0,0,0,0.5); color: white; border-radius: 50%;
-            width: 16px; height: 16px; display: flex;
-            align-items: center; justify-content: center;
-            font-size: 10px; cursor: pointer; border: none;
+            background: rgba(0,0,0,0.4); color: white; border: none;
+            border-radius: 50%; width: 15px; height: 15px; 
+            font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
         .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
         .input-group label { font-size: 12px; color: #cbd5e1; margin-bottom: 5px; }
-        .input-group input { padding: 8px; border-radius: 4px; border: none; }
+        .input-group input { padding: 10px; border-radius: 4px; border: none; font-size: 14px; }
 
         .no-export { display: none !important; }
     </style>
@@ -154,22 +143,18 @@
 </div>
 
 <div id="sidebar">
-    <h2 style="font-size: 1.2rem; margin-top:0">Configuración</h2>
+    <h2 style="font-size: 1.2rem; margin-top:0">Materias</h2>
     <div class="input-group">
-        <label>Nombre de Materia:</label>
-        <input type="text" id="materiaName" placeholder="Ej: Química">
+        <label>Nombre (puede ser largo):</label>
+        <input type="text" id="materiaName" placeholder="Ej: Mantenimiento de Sistemas">
     </div>
     <div class="input-group">
-        <label>Color:</label>
-        <input type="color" id="materiaColor" value="#3498db" style="width:100%; height:35px; border:none; padding:0">
+        <label>Color de fondo:</label>
+        <input type="color" id="materiaColor" value="#3498db" style="width:100%; height:35px; border:none; padding:0; cursor:pointer">
     </div>
-    <div class="input-group">
-        <label>Tamaño Letra (px):</label>
-        <input type="number" id="materiaFontSize" value="12">
-    </div>
-    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Guardar en Panel</button>
+    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Guardar en Lista</button>
     
-    <div id="materia-pool" style="margin-top:20px; overflow-y:auto; max-height: 50vh; border: 1px dashed #475569; padding: 10px;"></div>
+    <div id="materia-pool" style="margin-top:20px; overflow-y:auto; max-height: 55vh; border: 1px dashed #475569; padding: 10px;"></div>
 </div>
 
 <div id="main-content">
@@ -180,7 +165,7 @@
                 <h1 contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
                 <h1 contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
                 <h2 contenteditable="true">HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
-                <h3 contenteditable="true">2° A INFORMÁTICA</h3>
+                <h3 id="grupo-titulo" contenteditable="true">2° A INFORMÁTICA</h3>
             </div>
             <img src="DRAGONES.jpg" alt="DRAGONES">
         </div>
@@ -255,14 +240,12 @@
     function addNewMateria() {
         const name = document.getElementById('materiaName').value;
         const color = document.getElementById('materiaColor').value;
-        const size = document.getElementById('materiaFontSize').value;
         if (!name) return;
 
         const card = document.createElement('div');
         card.className = 'materia-card';
         card.style.backgroundColor = color;
-        card.style.fontSize = size + "px";
-        card.innerText = name; // Ya no es editable para evitar errores de arrastre
+        card.innerText = name; 
         
         document.getElementById('materia-pool').appendChild(card);
         document.getElementById('materiaName').value = "";
@@ -270,24 +253,26 @@
 
     function exportarPDF() {
         const elemento = document.getElementById('capture-area');
-        
-        // Ocultar X antes de exportar
+        const nombreGrupo = document.getElementById('grupo-titulo').innerText.trim();
         const botonesBorrar = document.querySelectorAll('.delete-btn');
+        
         botonesBorrar.forEach(btn => btn.classList.add('no-export'));
 
         const opciones = {
-            margin:       [10, 5, 10, 5],
-            filename:     'Horario_AQR.pdf',
+            margin:       [5, 0, 5, 0], // Margen arriba/abajo para centrar vertical
+            filename:     `Horario_${nombreGrupo}.pdf`,
             image:        { type: 'jpeg', quality: 1.0 },
             html2canvas:  { 
-                scale: 4, 
+                scale: 3, 
                 useCORS: true, 
                 letterRendering: true,
-                dpi: 300
+                scrollX: 0,
+                scrollY: 0
             },
             jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
 
+        // Generar el PDF
         html2pdf().set(opciones).from(elemento).save().then(() => {
             botonesBorrar.forEach(btn => btn.classList.remove('no-export'));
         });
