@@ -161,12 +161,13 @@
 
 <div id="main-content">
     <div class="schedule-grid" id="grid">
-        <div class="grid-header">Intervalo</div>
+        <div class="grid-header">Hora</div>
         <div class="grid-header">Lunes</div>
         <div class="grid-header">Martes</div>
         <div class="grid-header">Miércoles</div>
         <div class="grid-header">Jueves</div>
         <div class="grid-header">Viernes</div>
+        <div class="grid-header">Sabado</div>
         </div>
 </div>
 
@@ -195,7 +196,7 @@
         if (info === "RECREO") {
             const recreoDiv = document.createElement('div');
             recreoDiv.className = 'recreo-row';
-            recreoDiv.innerText = "RECREO (10 min)";
+            recreoDiv.innerText = "RECREO (30 min)";
             grid.appendChild(recreoDiv);
         } else {
             for (let i = 0; i < 5; i++) {
