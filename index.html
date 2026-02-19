@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario Escolar Dinámico</title>
+    <title>Horario Semestre B - 2025-2026</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <style>
         :root {
             --bg-sidebar: #1e293b;
-            --bg-grid: #f8fafc;
-            --border: #e2e8f0;
+            --bg-grid: #ffffff;
+            --border: #cbd5e1;
             --accent: #3b82f6;
         }
 
@@ -17,7 +17,7 @@
             font-family: 'Inter', system-ui, sans-serif;
             display: flex;
             margin: 0;
-            background: var(--bg-grid);
+            background: #f1f5f9;
             color: #1e293b;
         }
 
@@ -30,86 +30,79 @@
             padding: 25px;
             position: fixed;
             box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+            z-index: 100;
         }
 
         .input-group { margin-bottom: 20px; }
-        input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: none;
-            margin-top: 5px;
-        }
-        input[type="color"] {
-            width: 100%;
-            height: 40px;
-            border: none;
-            cursor: pointer;
-            background: none;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: var(--accent);
-            border: none;
-            color: white;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        button:hover { opacity: 0.9; }
-
-        /* Pool de materias */
-        #materia-pool {
-            margin-top: 20px;
-            min-height: 150px;
-            border: 2px dashed #475569;
-            border-radius: 8px;
-            padding: 10px;
-        }
-
-        /* Grid */
-        #main-content { margin-left: 280px; padding: 40px; width: 100%; }
+        input[type="text"] { width: 100%; padding: 10px; border-radius: 6px; border: none; margin-top: 5px; box-sizing: border-box;}
+        input[type="color"] { width: 100%; height: 40px; border: none; cursor: pointer; background: none; }
         
+        button {
+            width: 100%; padding: 12px; background: var(--accent); border: none;
+            color: white; border-radius: 6px; font-weight: 600; cursor: pointer;
+        }
+
+        #materia-pool {
+            margin-top: 20px; min-height: 100px; border: 2px dashed #475569;
+            border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 10px;
+        }
+
+        /* Contenido Principal */
+        #main-content { margin-left: 280px; padding: 20px; width: calc(100% - 280px); }
+
+        /* Encabezado según la imagen */
+        .header-institucional {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .header-institucional img { height: 80px; width: auto; }
+        .header-text h1 { font-size: 1.2rem; margin: 5px 0; color: #000; }
+        .header-text h2 { font-size: 1rem; margin: 5px 0; font-weight: normal; }
+
+        /* Grid de Horario (7 columnas: Hora + L a S) */
         .schedule-grid {
             display: grid;
-            grid-template-columns: 140px repeat(5, 1fr);
+            grid-template-columns: 120px repeat(6, 1fr);
             gap: 1px;
             background: var(--border);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
+            background-color: white;
         }
 
         .grid-header {
-            background: #f1f5f9;
-            padding: 15px;
+            background: #f8fafc;
+            padding: 10px;
             text-align: center;
             font-weight: 700;
-            text-transform: uppercase;
+            border-bottom: 2px solid var(--border);
             font-size: 0.8rem;
         }
 
         .time-label {
-            background: #fff;
-            padding: 15px 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
+            background: #f8fafc;
+            padding: 15px 5px;
+            font-size: 0.75rem;
+            font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-right: 2px solid var(--border);
+            border-right: 1px solid var(--border);
         }
 
         .time-slot {
             background: #fff;
-            min-height: 70px;
-            padding: 8px;
-            transition: background 0.2s;
+            min-height: 60px;
+            padding: 5px;
         }
 
-        /* Estilo Recreo */
+        /* Estilo Recreo - Ocupa las 6 columnas de días */
         .recreo-row {
             background: #fee2e2 !important;
             color: #b91c1c;
@@ -117,68 +110,89 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            grid-column: span 5;
-            pointer-events: none; /* No se puede soltar nada aquí */
+            grid-column: span 6; /* Abarca Lunes a Sábado */
+            font-size: 0.9rem;
+            text-transform: uppercase;
         }
 
-        /* Materias */
+        /* Tarjetas de Materia */
         .materia-card {
-            padding: 12px;
-            border-radius: 6px;
+            padding: 8px;
+            border-radius: 4px;
             color: white;
             cursor: grab;
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.8rem;
+            font-weight: bold;
             position: relative;
+            text-align: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
         .delete-btn {
             position: absolute;
-            top: 2px;
-            right: 5px;
+            top: -5px;
+            right: -5px;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 15px;
+            height: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
             cursor: pointer;
-            font-size: 14px;
         }
     </style>
 </head>
 <body>
 
 <div id="sidebar">
-    <h2>Panel</h2>
+    <h2>Panel de Control</h2>
     <div class="input-group">
-        <label>Materia:</label>
-        <input type="text" id="materiaName" placeholder="Ej: Matemáticas">
+        <label>Nombre de Materia:</label>
+        <input type="text" id="materiaName" placeholder="Ej: Programación">
     </div>
     <div class="input-group">
-        <label>Color:</label>
+        <label>Color de Etiqueta:</label>
         <input type="color" id="materiaColor" value="#3b82f6">
     </div>
-    <button onclick="addNewMateria()">Crear Cuadro</button>
+    <button onclick="addNewMateria()">+ Crear Materia</button>
     
     <div id="materia-pool">
         </div>
 </div>
 
 <div id="main-content">
+    <div class="header-institucional">
+        <img src="AQR.jpg" alt="Logo AQR">
+        <div class="header-text">
+            <h1>PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
+            <h1>“ANDRÉS QUINTANA ROO”</h1>
+            <h2>HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
+            <h3 contenteditable="true">2° A INFORMÁTICA (Click para editar)</h3>
+        </div>
+        <img src="DRAGONES.jpg" alt="Logo Dragones">
+    </div>
+
     <div class="schedule-grid" id="grid">
-        <div class="grid-header">Hora</div>
-        <div class="grid-header">Lunes</div>
-        <div class="grid-header">Martes</div>
-        <div class="grid-header">Miércoles</div>
-        <div class="grid-header">Jueves</div>
-        <div class="grid-header">Viernes</div>
+        <div class="grid-header">HORA</div>
+        <div class="grid-header">LUNES</div>
+        <div class="grid-header">MARTES</div>
+        <div class="grid-header">MIÉRCOLES</div>
+        <div class="grid-header">JUEVES</div>
+        <div class="grid-header">VIERNES</div>
+        <div class="grid-header">SÁBADO</div>
         </div>
 </div>
 
 <script>
     const grid = document.getElementById('grid');
     
-    // Configuración de los bloques
     const bloques = [
         "07:00 - 07:50",
         "07:50 - 08:40",
         "08:40 - 09:30",
-        "RECREO", // Caso especial
+        "RECREO", 
         "10:00 - 10:50",
         "10:50 - 11:40",
         "11:40 - 12:30",
@@ -195,18 +209,18 @@
         if (info === "RECREO") {
             const recreoDiv = document.createElement('div');
             recreoDiv.className = 'recreo-row';
-            recreoDiv.innerText = "RECREO (30 min)";
+            recreoDiv.innerText = "RECREO";
             grid.appendChild(recreoDiv);
         } else {
-            for (let i = 0; i < 5; i++) {
+            // Generar 6 celdas (Lunes a Sábado)
+            for (let i = 0; i < 6; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'time-slot';
                 grid.appendChild(slot);
 
                 new Sortable(slot, {
                     group: 'materias',
-                    animation: 150,
-                    ghostClass: 'blue-background-class'
+                    animation: 150
                 });
             }
         }
@@ -219,17 +233,18 @@
     });
 
     function addNewMateria() {
-        const name = document.getElementById('materiaName').value;
-        const color = document.getElementById('materiaColor').value;
-        if (!name) return;
+        const nameInput = document.getElementById('materiaName');
+        const colorInput = document.getElementById('materiaColor');
+        
+        if (!nameInput.value) return;
 
         const card = document.createElement('div');
         card.className = 'materia-card';
-        card.style.backgroundColor = color;
-        card.innerHTML = `${name} <span class="delete-btn" onclick="this.parentElement.remove()">×</span>`;
+        card.style.backgroundColor = colorInput.value;
+        card.innerHTML = `${nameInput.value} <span class="delete-btn" onclick="this.parentElement.remove()">×</span>`;
         
         document.getElementById('materia-pool').appendChild(card);
-        document.getElementById('materiaName').value = "";
+        nameInput.value = "";
     }
 </script>
 
