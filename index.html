@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario AQR - Final Fix</title>
+    <title>Horario AQR - Versión Final</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -62,7 +62,7 @@
         #capture-area { 
             background: white; 
             padding: 10mm; 
-            width: 210mm; /* Ancho completo para evitar recortes laterales */
+            width: 210mm; 
             box-sizing: border-box;
             margin: 0 auto;
             display: flex;
@@ -78,7 +78,7 @@
         .header-text h2 { font-size: 9pt; margin: 2px 0; font-weight: normal; }
         #grupo-titulo { font-size: 10pt; margin: 8px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 10px; outline: none; font-weight: bold; }
 
-        /* CUADRICULA MEJORADA */
+        /* CUADRICULA */
         .schedule-container {
             border: 1px solid var(--border-color);
             background: var(--border-color);
@@ -91,7 +91,12 @@
             display: flex;
             background: var(--border-color);
             gap: 1px;
-            min-height: 58px; /* Altura un poco mayor para legibilidad */
+            min-height: 58px; 
+        }
+
+        /* FILA DE CABECERA ESPECÍFICA (Más corta) */
+        .row-header {
+            min-height: 35px !important; /* Altura reducida para la cabecera */
         }
 
         .cell {
@@ -118,13 +123,14 @@
             background: #ffffff;
             font-weight: bold;
             font-size: 8.5pt;
-            align-items: center;
-            justify-content: center;
+            display: flex;
+            align-items: center; /* Centrado vertical */
+            justify-content: center; /* Centrado horizontal */
             text-align: center;
-            padding: 10px 0;
+            padding: 5px 0; /* Padding reducido */
         }
 
-        /* MATERIAS - AJUSTE DE FUENTE */
+        /* MATERIAS */
         .materia-card {
             width: 100%;
             display: flex;
@@ -133,7 +139,7 @@
             text-align: center;
             padding: 6px 4px; 
             color: black;
-            font-size: 10.5px; /* Subido para que no se vea microscópico */
+            font-size: 10.5px;
             line-height: 1.2;
             word-wrap: break-word;
             overflow-wrap: break-word;
@@ -220,7 +226,7 @@
         </div>
 
         <div class="schedule-container" id="schedule-body">
-            <div class="schedule-row">
+            <div class="schedule-row row-header">
                 <div class="cell cell-time cell-header">HORA</div>
                 <div class="cell cell-header">LUNES</div>
                 <div class="cell cell-header">MARTES</div>
@@ -299,7 +305,7 @@
         botonesBorrar.forEach(btn => btn.classList.add('no-export'));
 
         const opciones = {
-            margin: [5, 5, 5, 5], // Márgenes pequeños para evitar cortes
+            margin: [5, 5, 5, 5], 
             filename: `Horario_${nombreGrupo}.pdf`,
             image: { type: 'jpeg', quality: 1.0 },
             html2canvas: { scale: 3, useCORS: true, logging: false },
