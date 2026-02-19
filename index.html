@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Horario AQR</title>
+    <title>Horario Escolar AQR - Clean Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -22,7 +22,7 @@
             background: #f1f5f9;
         }
 
-        /* Controles de Interfaz */
+        /* Controles */
         .top-controls {
             position: fixed; left: 10px; top: 10px;
             z-index: 1000; display: flex; gap: 10px;
@@ -49,30 +49,30 @@
         #main-content {
             margin-left: var(--sidebar-width); padding: 20px;
             width: calc(100% - var(--sidebar-width)); transition: all 0.3s ease;
-            display: flex; justify-content: center; align-items: flex-start;
+            display: flex; justify-content: center;
         }
 
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* AREA DE CAPTURA (Centrada para PDF) */
+        /* AREA DE CAPTURA PDF */
         #capture-area { 
             background: white; 
-            padding: 10mm; 
-            width: 200mm; /* Ajuste para centrado en Letter/A4 */
-            min-height: 260mm;
+            padding: 12mm; 
+            width: 195mm; 
+            min-height: 265mm;
             box-sizing: border-box;
             margin: 0 auto;
         }
 
         .header-institucional { 
             display: flex; justify-content: space-between; align-items: center; 
-            text-align: center; margin-bottom: 20px; 
+            text-align: center; margin-bottom: 25px; 
         }
-        .header-institucional img { height: 95px; width: auto; }
+        .header-institucional img { height: 90px; width: auto; }
         
         .header-text h1 { font-size: 13pt; margin: 2px 0; font-weight: bold; }
-        .header-text h2 { font-size: 10pt; margin: 2px 0; }
-        #grupo-titulo { font-size: 11pt; margin: 5px 0; border-bottom: 2px solid black; display: inline-block; padding: 0 15px; outline: none; }
+        .header-text h2 { font-size: 10pt; margin: 2px 0; font-weight: normal; }
+        #grupo-titulo { font-size: 11pt; margin: 8px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 15px; outline: none; font-weight: bold; }
 
         /* Cuadrícula */
         .schedule-grid {
@@ -84,53 +84,56 @@
         }
 
         .grid-header { 
-            background: #ffffff; padding: 8px 2px; 
+            background: #ffffff; padding: 10px 2px; 
             text-align: center; font-weight: bold; font-size: 8.5pt; 
         }
 
         .time-label { 
             background: #ffffff; font-size: 7.5pt; font-weight: bold; 
             display: flex; align-items: center; justify-content: center;
-            text-align: center; line-height: 1.1;
+            text-align: center;
         }
 
         .time-slot { 
-            background: #fff; height: 60px; padding: 0;
-            position: relative; overflow: hidden;
+            background: #fff; height: 62px; padding: 0;
+            position: relative;
         }
 
         .recreo-row {
-            background: #f2f2f2 !important; color: #000; font-weight: bold;
+            background: #f9f9f9 !important; color: #000; font-weight: bold;
             display: flex; align-items: center; justify-content: center;
-            grid-column: span 6; font-size: 9pt; letter-spacing: 10px;
+            grid-column: span 6; font-size: 9pt; letter-spacing: 12px;
         }
 
-        /* MATERIAS CON TEXTO AUTO-AJUSTABLE */
+        /* MATERIAS - SIN NEGRITAS Y AUTO-AJUSTE */
         .materia-card {
             width: 100%; height: 100%; 
             color: white; cursor: grab;
             display: flex; align-items: center; justify-content: center;
-            text-align: center; font-weight: bold;
-            box-sizing: border-box; padding: 5px;
-            word-wrap: break-word; overflow: hidden;
-            font-size: 11px; /* Tamaño base que se adapta al contenedor */
-            line-height: 1.1;
+            text-align: center;
+            box-sizing: border-box; 
+            padding: 4px; /* Espacio interno para que el texto no toque bordes */
+            font-size: 10px; /* Tamaño optimizado para nombres largos */
+            line-height: 1.2;
+            font-weight: normal; /* Quitado el bold */
+            word-wrap: break-word; /* Rompe palabras si son muy largas */
+            overflow: hidden; /* Evita desbordes */
         }
 
         #materia-pool .materia-card {
-            height: 45px; margin-bottom: 8px; border-radius: 4px;
+            height: 40px; margin-bottom: 8px; border-radius: 4px;
         }
 
         .delete-btn {
             position: absolute; top: 1px; right: 1px;
-            background: rgba(0,0,0,0.4); color: white; border: none;
-            border-radius: 50%; width: 15px; height: 15px; 
-            font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3); color: white; border: none;
+            border-radius: 50%; width: 14px; height: 14px; 
+            font-size: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
 
         .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
         .input-group label { font-size: 12px; color: #cbd5e1; margin-bottom: 5px; }
-        .input-group input { padding: 10px; border-radius: 4px; border: none; font-size: 14px; }
+        .input-group input { padding: 10px; border-radius: 4px; border: none; font-size: 13px; }
 
         .no-export { display: none !important; }
     </style>
@@ -143,14 +146,14 @@
 </div>
 
 <div id="sidebar">
-    <h2 style="font-size: 1.2rem; margin-top:0">Materias</h2>
+    <h2 style="font-size: 1.2rem; margin-top:0">Herramientas</h2>
     <div class="input-group">
-        <label>Nombre (puede ser largo):</label>
-        <input type="text" id="materiaName" placeholder="Ej: Mantenimiento de Sistemas">
+        <label>Nombre de Materia:</label>
+        <input type="text" id="materiaName" placeholder="Escriba el nombre aquí...">
     </div>
     <div class="input-group">
-        <label>Color de fondo:</label>
-        <input type="color" id="materiaColor" value="#3498db" style="width:100%; height:35px; border:none; padding:0; cursor:pointer">
+        <label>Color de Etiqueta:</label>
+        <input type="color" id="materiaColor" value="#5dade2" style="width:100%; height:35px; border:none; padding:0; cursor:pointer">
     </div>
     <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Guardar en Lista</button>
     
@@ -165,7 +168,7 @@
                 <h1 contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
                 <h1 contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
                 <h2 contenteditable="true">HORARIO DEL SEMESTRE “B” DEL CICLO ESCOLAR 2025-2026</h2>
-                <h3 id="grupo-titulo" contenteditable="true">2° A INFORMÁTICA</h3>
+                <h3 id="grupo-titulo" contenteditable="true">GRUPO Y ESPECIALIDAD</h3>
             </div>
             <img src="DRAGONES.jpg" alt="DRAGONES">
         </div>
@@ -259,20 +262,17 @@
         botonesBorrar.forEach(btn => btn.classList.add('no-export'));
 
         const opciones = {
-            margin:       [5, 0, 5, 0], // Margen arriba/abajo para centrar vertical
+            margin:       [5, 0, 5, 0],
             filename:     `Horario_${nombreGrupo}.pdf`,
             image:        { type: 'jpeg', quality: 1.0 },
             html2canvas:  { 
                 scale: 3, 
                 useCORS: true, 
                 letterRendering: true,
-                scrollX: 0,
-                scrollY: 0
             },
             jsPDF:        { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
 
-        // Generar el PDF
         html2pdf().set(opciones).from(elemento).save().then(() => {
             botonesBorrar.forEach(btn => btn.classList.remove('no-export'));
         });
