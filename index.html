@@ -2,71 +2,61 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Sistema Maestro AQR - Cloud Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+    <title>AQR Control Maestro - Sistema R.A.T.S</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        :root { --bg-sidebar: #1e293b; --accent: #3b82f6; }
+        :root { --bg-sidebar: #0f172a; --accent: #2563eb; }
         body { font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; background: #f1f5f9; height: 100vh; overflow: hidden; }
         
-        /* Sidebar */
-        #sidebar { width: 260px; background: var(--bg-sidebar); color: white; padding: 20px; box-sizing: border-box; z-index: 1000; }
-        #materia-pool { border: 2px dashed #475569; border-radius: 8px; height: 300px; padding: 10px; overflow-y: auto; margin-top: 15px; }
-
-        /* Contenido Principal */
-        #main { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #sidebar { width: 280px; background: var(--bg-sidebar); color: white; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .top-nav { width: 100%; display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding-top: 10px; }
         
-        .top-nav { width: 100%; display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
-        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
-        .btn-sync { background: #3b82f6; } .btn-pdf { background: #ef4444; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
+        .btn-sync { background: #3b82f6; width: 100%; margin-bottom: 10px; }
+        .btn-pdf { background: #ef4444; }
+        .btn-config { background: #64748b; font-size: 11px; margin-top: 5px; }
 
-        /* Pestañas */
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
         .tab { padding: 6px 12px; background: #cbd5e1; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        .tab.active { background: var(--accent); color: white; transform: scale(1.1); }
+        .tab.active { background: var(--accent); color: white; }
 
-        /* Horario PDF (Centrado Corregido) */
-        #capture-area { 
-            background: white; 
-            padding: 10mm; 
-            width: 190mm; /* Ajustado para que quepa bien en Letter/A4 */
-            min-height: 250mm;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin: 0 auto;
-        }
+        /* Contenedor PDF */
+        #main { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        #capture-area { background: white; padding: 10mm; width: 195mm; min-height: 260mm; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 0 auto; }
 
-        .editable-text { outline: none; border-bottom: 1px dashed transparent; transition: 0.2s; }
-        .editable-text:hover { border-bottom-color: #3b82f6; background: #eff6ff; }
-        .editable-text:focus { border-bottom: 1px solid #3b82f6; background: #fff; }
+        /* Edición de texto */
+        .editable { outline: none; border: 1px solid transparent; padding: 2px; transition: 0.2s; }
+        .editable:hover { border: 1px dashed #3b82f6; background: #f0f7ff; }
+        .editable:focus { border: 1px solid #3b82f6; background: white; }
 
-        /* Estructura Tabla */
+        /* Tabla */
         .grid { display: flex; flex-direction: column; border: 1px solid black; background: black; gap: 1px; }
-        .row { display: flex; background: black; gap: 1px; min-height: 55px; }
+        .row { display: flex; background: black; gap: 1px; min-height: 58px; }
         .row-header { min-height: 35px !important; background: white; }
-        .cell { background: white; flex: 1; display: flex; align-items: stretch; justify-content: center; position: relative; }
-        .cell-time { flex: 0 0 75px; font-size: 7pt; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .cell { background: white; flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .cell-time { flex: 0 0 85px; font-size: 7.5pt; font-weight: bold; text-align: center; line-height: 1.2; }
         
-        .materia-card { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 9px; padding: 4px; cursor: grab; color: black; line-height: 1.1; }
-        .materia-card b { font-size: 9.5px; }
-        
-        .del-btn { position: absolute; top: 0; right: 0; background: #ef4444; color: white; border: none; width: 18px; height: 18px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center; z-index: 50; }
-        .no-export { display: none !important; }
-
-        .recesso { background: #f8fafc !important; font-weight: bold; letter-spacing: 12px; font-size: 10pt; align-items: center; }
+        .materia-content { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 9px; padding: 4px; box-sizing: border-box; color: black; }
+        .materia-content b { font-size: 9.5px; margin-bottom: 2px; }
+        .recesso { background: #f8fafc !important; font-weight: bold; letter-spacing: 10px; font-size: 10pt; }
     </style>
 </head>
 <body>
 
 <div id="sidebar">
-    <h3 style="margin:0">AQR Admin</h3>
-    <p style="font-size: 10px; color: #94a3b8; margin-top:5px;">Sincroniza con Google Sheets para actualizar materias.</p>
-    <div id="materia-pool"></div>
-    <p style="font-size: 9px; margin-top: 20px; color: #475569;">Desarrollado para AQR<br>Versión 6.0 Stable</p>
+    <h2 style="font-size: 1.2rem; margin-bottom: 5px;">AQR R.A.T.S</h2>
+    <p style="font-size: 11px; color: #94a3b8;">Control Centralizado por Excel</p>
+    
+    <button class="btn btn-sync" onclick="syncWithGoogle()">🔄 Sincronizar Excel</button>
+    <p style="font-size: 10px; color: #64748b;">Nota: Al sincronizar, se sobrescriben los cambios manuales por lo que diga el Excel.</p>
+    
+    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #334155;">
+        <p style="font-size: 10px;">Versión 7.0 - Solo Lectura</p>
+    </div>
 </div>
 
 <div id="main">
     <div class="top-nav">
-        <button class="btn btn-sync" onclick="syncWithGoogle()">🔄 Sincronizar con Google</button>
         <button class="btn btn-pdf" onclick="exportPDF()">⬇ Descargar PDF</button>
     </div>
 
@@ -74,39 +64,41 @@
     
     <div id="capture-area">
         <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 15px;">
-            <img src="AQR.jpg" style="height: 60px;">
+            <img src="AQR.jpg" style="height: 65px;">
             <div style="text-align:center; flex-grow:1;">
-                <h1 contenteditable="true" class="editable-text" style="margin:0; font-size: 11pt;">PREPARATORIA FEDERAL POR COOPERACIÓN “ANDRÉS QUINTANA ROO”</h1>
-                <h2 contenteditable="true" class="editable-text" style="margin:0; font-size: 9pt; font-weight: normal;">HORARIO ESCOLAR - CICLO 2025-2026</h2>
-                <div id="current-group" contenteditable="true" class="editable-text" style="margin-top:5px; font-weight:bold; border-bottom: 2px solid black; padding: 0 15px; display: inline-block;">GRUPO 1A</div>
+                <h1 contenteditable="true" id="edit-titulo-h1" class="editable" oninput="saveTitles()" style="margin:0; font-size: 11pt;">PREPARATORIA FEDERAL POR COOPERACIÓN “ANDRÉS QUINTANA ROO”</h1>
+                <h2 contenteditable="true" id="edit-titulo-h2" class="editable" oninput="saveTitles()" style="margin:0; font-size: 9pt; font-weight: normal;">HORARIO ESCOLAR - CICLO 2025-2026</h2>
+                <div id="current-group-display" contenteditable="true" class="editable" oninput="saveGroupTitle()" style="margin-top:5px; font-weight:bold; border-bottom: 2px solid black; padding: 0 15px; display: inline-block; min-width: 100px;">GRUPO 1A</div>
             </div>
-            <img src="DRAGONES.jpg" style="height: 60px;">
+            <img src="DRAGONES.jpg" style="height: 65px;">
         </div>
 
         <div class="grid" id="grid-body">
             <div class="row row-header">
                 <div class="cell cell-time">HORA</div>
-                <div class="cell" style="font-weight:bold; font-size:8pt; align-items:center;">LUNES</div>
-                <div class="cell" style="font-weight:bold; font-size:8pt; align-items:center;">MARTES</div>
-                <div class="cell" style="font-weight:bold; font-size:8pt; align-items:center;">MIÉRCOLES</div>
-                <div class="cell" style="font-weight:bold; font-size:8pt; align-items:center;">JUEVES</div>
-                <div class="cell" style="font-weight:bold; font-size:8pt; align-items:center;">VIERNES</div>
-                <div class="cell" style="font-weight:bold; font-size:8pt; align-items:center;">SÁBADO</div>
+                <div class="cell" style="font-weight:bold; font-size:8pt;">LUNES</div>
+                <div class="cell" style="font-weight:bold; font-size:8pt;">MARTES</div>
+                <div class="cell" style="font-weight:bold; font-size:8pt;">MIÉRCOLES</div>
+                <div class="cell" style="font-weight:bold; font-size:8pt;">JUEVES</div>
+                <div class="cell" style="font-weight:bold; font-size:8pt;">VIERNES</div>
+                <div class="cell" style="font-weight:bold; font-size:8pt;">SÁBADO</div>
             </div>
         </div>
-        <p style="text-align:center; font-size: 7pt; margin-top: 10px; font-style: italic;">R.A.T.S</p>
+        <p style="text-align:center; font-size: 7pt; margin-top: 15px; font-style: italic; opacity: 0.6;">R.A.T.S - Registro Autor Controlado</p>
     </div>
 </div>
 
 <script>
     const SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5V41q3aGjOH5IsmJGWeS9VffmtrXvFXj9wv3o6Jda406EHASwcXO5SUQpQeqoJRY3hg4O8iKB5RoP/pub?output=csv";
-    const grupos = ["1A", "1B", "1C", "2A", "2B", "2C", "3A", "3B", "3C"];
+    
+    // Grupos base + Espacios para horarios especiales (Dobles)
+    const grupos = ["1A", "1B", "1C", "1A-ESP", "2A", "2B", "2C", "2A-ESP", "3A", "3B", "3C"];
     const horas = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "RECESSO", "10:00-10:50", "10:50-11:40", "11:40-12:30", "12:30-13:20", "13:20-14:10"];
     const diasMap = {"LUNES":0, "MARTES":1, "MIÉRCOLES":2, "MIERCOLES":2, "JUEVES":3, "VIERNES":4, "SÁBADO":5, "SABADO":5};
     
-    let activeG = "1A";
-    let database = JSON.parse(localStorage.getItem('aqr_cloud_v6_db')) || {};
-    grupos.forEach(g => { if(!database[g]) database[g] = {}; });
+    let activeG = localStorage.getItem('aqr_last_group') || "1A";
+    let database = JSON.parse(localStorage.getItem('aqr_v7_db')) || {};
+    let customTitles = JSON.parse(localStorage.getItem('aqr_v7_titles')) || {};
 
     function init() {
         const body = document.getElementById('grid-body');
@@ -121,14 +113,15 @@
             } else {
                 for(let d=0; d<6; d++) {
                     const cell = document.createElement('div');
-                    cell.className = 'cell target';
-                    cell.dataset.pos = `${idx}-${d}`;
+                    cell.className = 'cell target-cell';
+                    cell.id = `cell-${idx}-${d}`;
                     row.appendChild(cell);
-                    new Sortable(cell, { group: 'materias', animation: 150, onAdd: (e) => handleDrop(e, cell.dataset.pos) });
                 }
             }
             body.appendChild(row);
         });
+        
+        loadSavedTitles();
         renderTabs();
         updateView();
     }
@@ -138,78 +131,90 @@
             const response = await fetch(SHEETS_URL);
             const data = await response.text();
             const rows = data.split('\n');
+            
+            // Limpieza total antes de cargar
             grupos.forEach(g => database[g] = {});
 
             rows.forEach((row, i) => {
                 if(i === 0 || !row.trim()) return;
-                const columns = row.split(',');
-                if(columns.length < 6) return;
-                const [mat, prof, col, grupo, bloque, dia] = columns.map(c => c.trim());
+                const cols = row.split(',').map(c => c.trim());
+                if(cols.length < 6) return;
+
+                const [mat, prof, col, grupo, bloque, dia] = cols;
                 const dIdx = diasMap[dia.toUpperCase()];
                 const gKey = grupo.toUpperCase();
 
                 if(database[gKey] && dIdx !== undefined) {
-                    const cleanColor = col.replace(/\s+/g, '').toLowerCase();
-                    database[gKey][`${bloque}-${dIdx}`] = { m: mat, p: prof, c: cleanColor };
+                    database[gKey][`${bloque}-${dIdx}`] = { m: mat, p: prof, c: col.replace(/\s+/g, '').toLowerCase() };
                 }
             });
-            save(); updateView();
-            alert("✅ Sincronizado!");
-        } catch (error) { alert("Error de conexión."); }
-    }
-
-    function handleDrop(e, pos) {
-        const item = e.item;
-        const prof = item.dataset.profe;
-        let clash = false;
-        grupos.forEach(g => {
-            if(g !== activeG && database[g][pos] && database[g][pos].p === prof) {
-                clash = true; alert(`Choque: ${prof} en ${g}`); e.from.appendChild(item);
-            }
-        });
-        if(!clash) {
-            database[activeG][pos] = { m: item.dataset.m, p: prof, c: item.dataset.color };
-            save(); attachDelBtn(item, pos);
-        }
-    }
-
-    function attachDelBtn(card, pos) {
-        if(card.querySelector('.del-btn')) return;
-        const b = document.createElement('button');
-        b.className = 'del-btn no-export'; b.innerHTML = '×';
-        b.onclick = () => { card.remove(); delete database[activeG][pos]; save(); };
-        card.appendChild(b);
+            
+            save();
+            updateView();
+            alert("✅ Sincronizado. Los horarios ahora reflejan exactamente tu Excel.");
+        } catch (e) { alert("Error al conectar con Google Sheets."); }
     }
 
     function updateView() {
-        document.querySelectorAll('.target').forEach(c => {
+        document.querySelectorAll('.target-cell').forEach(c => {
             c.innerHTML = '';
-            const data = database[activeG][c.dataset.pos];
-            if(data) {
-                const card = document.createElement('div');
-                card.className = 'materia-card'; card.style.backgroundColor = data.c;
-                card.dataset.m = data.m; card.dataset.profe = data.p; card.dataset.color = data.c;
-                card.innerHTML = `<b>${data.m}</b><span>${data.p}</span>`;
-                attachDelBtn(card, c.dataset.pos);
-                c.appendChild(card);
+            const [b, d] = c.id.replace('cell-', '').split('-');
+            const data = database[activeG] ? database[activeG][`${b}-${d}`] : null;
+            
+            if(data && data.m !== "") {
+                c.innerHTML = `
+                    <div class="materia-content" style="background-color: ${data.c}">
+                        <b>${data.m}</b>
+                        <span>${data.p}</span>
+                    </div>`;
             }
         });
+        
+        // Cargar el nombre específico del grupo guardado
+        document.getElementById('current-group-display').innerText = customTitles[activeG] || `GRUPO ${activeG}`;
+    }
+
+    // GESTIÓN DE TÍTULOS Y MEMORIA
+    function saveTitles() {
+        const t1 = document.getElementById('edit-titulo-h1').innerText;
+        const t2 = document.getElementById('edit-titulo-h2').innerText;
+        localStorage.setItem('aqr_main_titles', JSON.stringify({t1, t2}));
+    }
+
+    function saveGroupTitle() {
+        const newTitle = document.getElementById('current-group-display').innerText;
+        customTitles[activeG] = newTitle;
+        localStorage.setItem('aqr_v7_titles', JSON.stringify(customTitles));
+    }
+
+    function loadSavedTitles() {
+        const main = JSON.parse(localStorage.getItem('aqr_main_titles'));
+        if(main) {
+            document.getElementById('edit-titulo-h1').innerText = main.t1;
+            document.getElementById('edit-titulo-h2').innerText = main.t2;
+        }
     }
 
     function renderTabs() {
-        document.getElementById('tab-bar').innerHTML = grupos.map(g => `<button class="tab ${g===activeG?'active':''}" onclick="changeG('${g}')">${g}</button>`).join('');
+        document.getElementById('tab-bar').innerHTML = grupos.map(g => 
+            `<button class="tab ${g===activeG?'active':''}" onclick="changeG('${g}')">${g}</button>`).join('');
     }
 
-    function changeG(g) { activeG = g; document.getElementById('current-group').innerText = `GRUPO ${g}`; renderTabs(); updateView(); }
-    function save() { localStorage.setItem('aqr_cloud_v6_db', JSON.stringify(database)); }
+    function changeG(g) { 
+        activeG = g; 
+        localStorage.setItem('aqr_last_group', g);
+        renderTabs(); 
+        updateView(); 
+    }
+
+    function save() { localStorage.setItem('aqr_v7_db', JSON.stringify(database)); }
     
     function exportPDF() { 
         const area = document.getElementById('capture-area');
         const opt = {
             margin: 5,
-            filename: `Horario_${activeG}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+            filename: `${document.getElementById('current-group-display').innerText}.pdf`,
+            html2canvas: { scale: 2 },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
         html2pdf().set(opt).from(area).save();
