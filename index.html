@@ -9,9 +9,11 @@
         body { font-family: 'Helvetica', 'Arial', sans-serif; display: flex; margin: 0; background: #f1f5f9; height: 100vh; overflow: hidden; }
         
         #sidebar { width: 280px; background: var(--bg-sidebar); color: white; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; flex-shrink: 0; }
-        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
-        .btn-sync { background: #3b82f6; width: 100%; margin-bottom: 10px; border-bottom: 3px solid #1d4ed8; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; margin-bottom: 10px;}
+        .btn-sync { background: #3b82f6; width: 100%; border-bottom: 3px solid #1d4ed8; }
         .btn-pdf { background: #ef4444; border-bottom: 3px solid #b91c1c; }
+        .btn-clear { background: #64748b; font-size: 10px; opacity: 0.8; margin-top: 10px; border: 1px solid #475569; }
+        .btn-clear:hover { background: #ef4444; opacity: 1; }
 
         .tabs-container { width: 95%; max-width: 900px; padding: 10px 0; }
         .tabs { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
@@ -50,8 +52,11 @@
 
 <div id="sidebar">
     <h2 style="margin-bottom: 5px;">Creador de Horarios</h2>
-    <p style="font-size: 11px; color: #94a3b8; margin-bottom: 20px;">ir al excel para modificar <a href="https://docs.google.com/spreadsheets/d/1HiutzvGFlvBurHu0IR5gh-GSSR7NL7s52ZPtvVIUbgM/edit?gid=0#gid=0" target="_blank">click aqui</a> </p>
+    <p style="font-size: 11px; color: #94a3b8; margin-bottom: 20px;">ir al excel para modificar <a href="https://docs.google.com/spreadsheets/d/1HiutzvGFlvBurHu0IR5gh-GSSR7NL7s52ZPtvVIUbgM/edit?gid=0#gid=0" target="_blank" style="color:#60a5fa">click aqui</a> </p>
+    
     <button class="btn btn-sync" onclick="syncWithGoogle()">SINCRONIZAR EXCEL</button>
+    <button class="btn btn-clear" onclick="clearLocalMemory()">BORRAR MEMORIA LOCAL</button>
+
     <div style="margin-top: auto; font-size: 10px; color: #64748b;">R.A.T.S - Response and Analysis for Threat Security</div>
 </div>
 
@@ -131,42 +136,46 @@
     async function syncWithGoogle() {
         try {
             const response = await fetch(SHEETS_URL);
-            const data = await response.text();
-            const rows = data.split('\n');
+            const csvData = await response.text();
+            const rows = csvData.split('\n');
+
+            // --- REINICIO TOTAL PARA LIMPIEZA ---
+            database = {};
             grupos.forEach(g => database[g] = {});
             
             rows.forEach((row, i) => {
                 if(i === 0 || !row.trim()) return;
-                
-                // Expresión regular para manejar comas dentro de comillas si fuera necesario
-                const cols = row.split(',').map(c => c.trim());
+                const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
                 if(cols.length < 6) return;
                 
                 const [mat, prof, col, grupo, bloque, dia] = cols;
+                if (!dia || !grupo) return;
+
                 const dIdx = diasMap[dia.toUpperCase()];
                 const gKey = grupo.toUpperCase();
 
                 if(database[gKey] && dIdx !== undefined) {
-                    // --- AQUÍ ESTÁ EL CAMBIO ---
-                    // Dividimos el bloque por puntos, guiones o cualquier separador si existe
-                    // Usamos una coma como estándar según tu petición (ej: "1,2,5")
-                    const bloquesArray = bloque.split(/[\s,.-]+/); 
-                    
+                    const bloquesArray = bloque.toString().split(/[\s,.-]+/); 
                     bloquesArray.forEach(b => {
                         const bNum = b.trim();
                         if(bNum) {
-                            database[gKey][`${bNum}-${dIdx}`] = { 
-                                m: mat, 
-                                p: prof, 
-                                c: col.replace(/\s+/g, '').toLowerCase() 
-                            };
+                            database[gKey][`${bNum}-${dIdx}`] = { m: mat, p: prof, c: col.replace(/\s+/g, '').toLowerCase() };
                         }
                     });
                 }
             });
             save(); updateView();
-            alert("Sincronizado con éxito! Ahora puedes usar bloques múltiples.");
-        } catch (e) { alert("Error de conexión, Favor de llamar a iann."); }
+            alert("Sincronización limpia completada.");
+        } catch (e) { alert("Error al conectar con Google Sheets."); }
+    }
+
+    function clearLocalMemory() {
+        if(confirm("¿Seguro? Se borrará todo lo guardado en el navegador.")) {
+            localStorage.removeItem('aqr_v_classic_db');
+            database = {};
+            grupos.forEach(g => database[g] = {});
+            updateView();
+        }
     }
 
     function updateView() {
@@ -180,7 +189,6 @@
         document.getElementById('current-group-display').innerText = customTitles[activeG] || `GRUPO ${activeG}`;
     }
 
-    // Funciones de guardado y UI...
     function saveTitles() {
         const t1 = document.getElementById('edit-titulo-h1').innerText;
         const t2 = document.getElementById('edit-titulo-h2').innerText;
