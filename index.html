@@ -8,203 +8,155 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
-        :root {
-            --bg-sidebar: #1e293b;
-            --border-color: #000000;
-            --accent: #3b82f6;
-            --sidebar-width: 260px;
-        }
-
+        :root { --bg-sidebar: #1e293b; --border-color: #000000; --accent: #3b82f6; --sidebar-width: 260px; }
         body { font-family: Arial, sans-serif; display: flex; margin: 0; background: #f1f5f9; }
 
         /* Interfaz lateral */
-        .top-controls { position: fixed; left: 10px; top: 10px; z-index: 1000; display: flex; gap: 10px; }
-        .btn-ui { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .btn-pdf { background: #e74c3c; }
-        .btn-csv { background: #10b981; }
+        .top-controls { position: fixed; left: 10px; top: 10px; z-index: 2000; display: flex; gap: 10px; }
+        .btn-ui { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-pdf { background: #e74c3c; } .btn-csv { background: #10b981; }
 
         #sidebar {
-            width: var(--sidebar-width); height: 100vh;
-            background: var(--bg-sidebar); color: white;
-            padding: 70px 15px 15px 15px; position: fixed;
-            left: 0; transition: transform 0.3s ease;
-            z-index: 100; box-sizing: border-box; overflow-y: auto;
+            width: var(--sidebar-width); height: 100vh; background: var(--bg-sidebar); color: white;
+            padding: 70px 15px 15px 15px; position: fixed; left: 0; z-index: 1000; box-sizing: border-box; overflow-y: auto;
         }
-
-        #sidebar.hidden { transform: translateX(-100%); }
 
         #main-content {
-            margin-left: var(--sidebar-width); 
-            padding: 20px; width: calc(100% - var(--sidebar-width)); 
-            transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center;
+            margin-left: var(--sidebar-width); padding: 20px; width: calc(100% - var(--sidebar-width)); 
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
-        #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* Barra de Pestañas de Grupos */
+        /* BARRA DE PESTAÑAS - CORREGIDA */
         .group-tabs { 
-            display: flex; gap: 5px; margin-top: 45px; margin-bottom: 15px; 
-            flex-wrap: wrap; justify-content: center; max-width: 800px;
+            display: flex; gap: 8px; margin-top: 60px; margin-bottom: 20px; 
+            flex-wrap: wrap; justify-content: center; z-index: 500; position: relative;
         }
-        .tab-btn { background: #475569; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; }
-        .tab-btn:hover { background: #64748b; }
-        .tab-btn.active { background: var(--accent); font-weight: bold; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
+        .tab-btn { background: #cbd5e1; color: #1e293b; border: 2px solid #94a3b8; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
 
-        /* AREA DE CAPTURA PDF (Tu base original optimizada) */
-        #capture-area { 
-            background: white; padding: 8mm; width: 200mm; 
-            box-sizing: border-box; margin: 0 auto;
-            display: flex; flex-direction: column;
-        }
+        /* CAPTURA PDF */
+        #capture-area { background: white; padding: 8mm; width: 200mm; box-sizing: border-box; margin: 0 auto; display: flex; flex-direction: column; }
+        .header-institucional { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .header-institucional img { height: 70px; }
+        .header-text h1 { font-size: 11pt; margin: 1px 0; font-weight: bold; text-align: center;}
+        #grupo-titulo { font-size: 11pt; font-weight: bold; border-bottom: 2px solid black; padding: 0 10px; margin-top: 10px; display: inline-block;}
 
-        .header-institucional { display: flex; justify-content: space-between; align-items: center; text-align: center; margin-bottom: 15px; }
-        .header-institucional img { height: 75px; width: auto; }
-        .header-text h1 { font-size: 11pt; margin: 1px 0; font-weight: bold; }
-        .header-text h2 { font-size: 9pt; margin: 1px 0; font-weight: normal; }
-        #grupo-titulo { font-size: 10pt; margin: 5px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 10px; outline: none; font-weight: bold; text-transform: uppercase; }
-
-        /* CUADRICULA */
-        .schedule-container { border: 1px solid var(--border-color); background: var(--border-color); display: flex; flex-direction: column; gap: 1px; }
-        .schedule-row { display: flex; background: var(--border-color); gap: 1px; min-height: 52px; }
+        /* TABLA */
+        .schedule-container { border: 1px solid black; background: black; display: flex; flex-direction: column; gap: 1px; }
+        .schedule-row { display: flex; background: black; gap: 1px; min-height: 52px; }
         .row-header { min-height: 30px !important; }
+        .cell { background: white; flex: 1; display: flex; align-items: stretch; justify-content: center; position: relative; min-width: 0; }
+        .cell-time { flex: 0 0 75px; font-size: 7.5pt; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
-        .cell { background: #ffffff; flex: 1; display: flex; align-items: stretch; justify-content: center; position: relative; }
-        .cell-time { flex: 0 0 75px; background: #ffffff; font-size: 7.5pt; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; }
-        .cell-header { background: #ffffff; font-weight: bold; font-size: 8.5pt; display: flex; align-items: center; justify-content: center; padding: 4px 0; }
-
-        /* MATERIAS CARDS */
+        /* MATERIAS */
         .materia-card {
             width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 4px; color: black; font-size: 9px; line-height: 1.1;
-            word-wrap: break-word; box-sizing: border-box; cursor: grab;
+            text-align: center; padding: 4px; font-size: 9px; cursor: grab; position: relative;
         }
-        .materia-card b { font-size: 10px; display: block; margin-bottom: 1px; }
-        .materia-card i { font-size: 8px; opacity: 0.8; font-style: normal; display: block; }
+        .materia-card b { font-size: 9.5px; }
+        
+        .delete-btn { 
+            position: absolute; top: 1px; right: 1px; background: #ef4444; color: white; 
+            border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 50;
+        }
 
-        .recesso-row-style { background: #f5f5f5 !important; flex: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 12px; font-weight: bold; font-size: 9pt; min-height: 30px; }
-        .signature { margin-top: 10px; text-align: center; font-size: 7.5pt; color: #64748b; font-style: italic; width: 100%; }
-
-        #materia-pool .materia-card { margin-bottom: 6px; border-radius: 3px; min-height: 35px; border: 1px solid rgba(0,0,0,0.1); }
-        .delete-btn { position: absolute; top: 1px; right: 1px; background: rgba(0,0,0,0.2); color: white; border: none; border-radius: 50%; width: 14px; height: 14px; font-size: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
+        .recesso-row-style { background: #f1f5f9 !important; flex: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 12px; font-weight: bold; font-size: 9pt; }
+        .signature { margin-top: 10px; text-align: center; font-size: 7.5pt; font-style: italic; }
         .no-export { display: none !important; }
     </style>
 </head>
 <body>
 
 <div class="top-controls">
-    <button class="btn-ui" onclick="toggleSidebar()">☰ Panel</button>
-    <button class="btn-ui btn-csv" onclick="document.getElementById('csvInput').click()">📂 Cargar CSV (Excel)</button>
+    <button class="btn-ui btn-csv" onclick="document.getElementById('csvInput').click()">📂 Cargar Excel (CSV)</button>
     <button class="btn-ui btn-pdf" onclick="exportarPDF()">⬇ Descargar PDF</button>
-    <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="cargarCSV(this)">
+    <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="cargarCSVInteligente(this)">
 </div>
 
 <div id="sidebar">
-    <h2 style="font-size: 1rem; margin-top:0">Materias</h2>
-    <p style="font-size: 10px; color: #cbd5e1; margin-bottom: 15px;">1. Carga tu CSV.<br>2. Arrastra al horario.<br>3. Cambia de grupo arriba.</p>
+    <h2 style="font-size: 1rem; margin-top:0">Materias Pool</h2>
     <div id="materia-pool" style="border: 1px dashed #475569; padding: 10px; min-height: 100px;"></div>
 </div>
 
 <div id="main-content">
-    <div class="group-tabs no-export" id="tabs-container"></div>
+    <div class="group-tabs" id="tabs-container"></div>
 
     <div id="capture-area">
         <div class="header-institucional">
             <img src="AQR.jpg" alt="AQR">
-            <div class="header-text">
-                <h1 contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
-                <h1 contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
-                <h2 contenteditable="true">HORARIO DEL SEMESTRE “B” - CICLO 2025-2026</h2>
-                <h3 id="grupo-titulo" contenteditable="true">GRUPO 1A</h3>
+            <div class="header-text" style="text-align: center;">
+                <h1>PREPARATORIA FEDERAL POR COOPERACIÓN “ANDRÉS QUINTANA ROO”</h1>
+                <h2 style="font-size: 9pt; margin: 0;">HORARIO ESCOLAR - CICLO 2025-2026</h2>
+                <div id="grupo-titulo">GRUPO 1A</div>
             </div>
             <img src="DRAGONES.jpg" alt="DRAGONES">
         </div>
 
         <div class="schedule-container" id="schedule-body">
             <div class="schedule-row row-header">
-                <div class="cell cell-time cell-header">HORA</div>
-                <div class="cell cell-header">LUNES</div>
-                <div class="cell cell-header">MARTES</div>
-                <div class="cell cell-header">MIÉRCOLES</div>
-                <div class="cell cell-header">JUEVES</div>
-                <div class="cell cell-header">VIERNES</div>
-                <div class="cell cell-header">SÁBADO</div>
+                <div class="cell cell-time" style="font-weight: bold;">HORA</div>
+                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">LUNES</div>
+                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">MARTES</div>
+                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">MIÉRCOLES</div>
+                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">JUEVES</div>
+                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">VIERNES</div>
+                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">SÁBADO</div>
             </div>
-            </div>
-
+        </div>
         <div class="signature">R.A.T.S</div>
     </div>
 </div>
 
 <script>
-    // CONFIGURACIÓN INICIAL
     const grupos = ["1A", "1B", "1C", "2A", "2B", "2C", "3A", "3B", "3C"];
-    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECESSO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
+    const bloques = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "RECESSO", "10:00-10:50", "10:50-11:40", "11:40-12:30", "12:30-13:20", "13:20-14:10"];
     let grupoActivo = "1A";
-    
-    // BASE DE DATOS LOCAL
-    let db = JSON.parse(localStorage.getItem('aqr_master_db')) || {};
+    let db = JSON.parse(localStorage.getItem('aqr_v3_db')) || {};
     grupos.forEach(g => { if(!db[g]) db[g] = {}; });
 
-    function toggleSidebar() {
-        document.getElementById('sidebar').classList.toggle('hidden');
-        document.getElementById('main-content').classList.toggle('full-width');
-    }
-
-    // RENDERIZAR LA TABLA
+    // RENDERIZAR ESTRUCTURA
     const container = document.getElementById('schedule-body');
-    bloques.forEach((info, bIdx) => {
+    bloques.forEach((hora, bIdx) => {
         const row = document.createElement('div');
-        row.className = 'schedule-row' + (info === "RECESSO" ? " row-header" : "");
+        row.className = 'schedule-row' + (hora === "RECESSO" ? " row-header" : "");
         
         const timeCell = document.createElement('div');
         timeCell.className = 'cell cell-time';
-        timeCell.innerText = info === "RECESSO" ? "09:30-10:00" : info;
+        timeCell.innerText = hora === "RECESSO" ? "09:30-10:00" : hora;
         row.appendChild(timeCell);
 
-        if (info === "RECESSO") {
-            const recessoCell = document.createElement('div');
-            recessoCell.className = 'recesso-row-style';
-            recessoCell.innerText = "RECESSO";
-            row.appendChild(recessoCell);
+        if (hora === "RECESSO") {
+            row.innerHTML += `<div class="recesso-row-style">RECESSO</div>`;
         } else {
             for (let dIdx = 0; dIdx < 6; dIdx++) {
-                const dayCell = document.createElement('div');
-                dayCell.className = 'cell target-cell';
-                dayCell.dataset.pos = `${bIdx}-${dIdx}`;
-                row.appendChild(dayCell);
+                const cell = document.createElement('div');
+                cell.className = 'cell target-cell';
+                cell.dataset.pos = `${bIdx}-${dIdx}`;
+                row.appendChild(cell);
 
-                new Sortable(dayCell, {
+                new Sortable(cell, {
                     group: 'materias',
                     animation: 150,
                     onAdd: function(evt) {
                         const item = evt.item;
-                        const pos = dayCell.dataset.pos;
+                        const pos = cell.dataset.pos;
                         const profe = item.dataset.profe;
 
-                        // VALIDACIÓN DE PROFESOR OCUPADO
-                        let conflicto = false;
-                        let grupoConflictivo = "";
-                        
+                        // BLOQUEO DE PROFESOR
+                        let ocupado = false;
                         grupos.forEach(g => {
                             if (g !== grupoActivo && db[g][pos] && db[g][pos].profe === profe) {
-                                conflicto = true;
-                                grupoConflictivo = g;
+                                ocupado = true; alert(`¡ALERTA! El Profe ${profe} ya está en el grupo ${g}`);
+                                evt.from.appendChild(item);
                             }
                         });
 
-                        if (conflicto) {
-                            alert(`❌ BLOQUEO R.A.T.S:\nEl profesor ${profe} ya tiene clase asignada en el GRUPO ${grupoConflictivo} a esta misma hora.`);
-                            evt.from.appendChild(item);
-                            return;
+                        if (!ocupado) {
+                            db[grupoActivo][pos] = { m: item.dataset.m, p: item.dataset.profe, c: item.dataset.color };
+                            save();
+                            addX(item, pos);
                         }
-
-                        // GUARDAR EN MEMORIA
-                        db[grupoActivo][pos] = {
-                            materia: item.dataset.materia,
-                            profe: item.dataset.profe,
-                            color: item.dataset.color
-                        };
-                        saveDB();
-                        if(!item.querySelector('.delete-btn')) addDeleteBtn(item, pos);
                     }
                 });
             }
@@ -212,97 +164,70 @@
         container.appendChild(row);
     });
 
-    // SISTEMA DE PESTAÑAS
+    function addX(item, pos) {
+        if (item.querySelector('.delete-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'delete-btn no-export'; btn.innerHTML = '×';
+        btn.onclick = () => { item.remove(); delete db[grupoActivo][pos]; save(); };
+        item.appendChild(btn);
+    }
+
     function renderTabs() {
-        const tabsContainer = document.getElementById('tabs-container');
-        tabsContainer.innerHTML = '';
-        grupos.forEach(g => {
-            const btn = document.createElement('button');
-            btn.className = 'tab-btn' + (g === grupoActivo ? ' active' : '');
-            btn.innerText = g;
-            btn.onclick = () => cambiarGrupo(g);
-            tabsContainer.appendChild(btn);
-        });
+        const tc = document.getElementById('tabs-container');
+        tc.innerHTML = grupos.map(g => `<button class="tab-btn ${g===grupoActivo?'active':''}" onclick="cambiarGrupo('${g}')">${g}</button>`).join('');
     }
 
     function cambiarGrupo(g) {
         grupoActivo = g;
         document.getElementById('grupo-titulo').innerText = `GRUPO ${g}`;
         renderTabs();
-        
-        // Cargar celdas
         document.querySelectorAll('.target-cell').forEach(cell => {
             cell.innerHTML = '';
             const data = db[g][cell.dataset.pos];
             if (data) {
-                const card = createCard(data.materia, data.profe, data.color, cell.dataset.pos);
+                const card = createCard(data.m, data.p, data.c, cell.dataset.pos);
                 cell.appendChild(card);
             }
         });
     }
 
-    // CREACIÓN DE TARJETAS
     function createCard(m, p, c, pos = null) {
-        const card = document.createElement('div');
-        card.className = 'materia-card';
-        card.style.backgroundColor = c;
-        card.dataset.materia = m;
-        card.dataset.profe = p;
-        card.dataset.color = c;
-        card.innerHTML = `<b>${m}</b><i>${p}</i>`;
-        if (pos) addDeleteBtn(card, pos);
-        return card;
+        const div = document.createElement('div');
+        div.className = 'materia-card'; div.style.backgroundColor = c;
+        div.dataset.m = m; div.dataset.profe = p; div.dataset.color = c;
+        div.innerHTML = `<b style="color:black">${m}</b><span style="font-size:8px; color:black">${p}</span>`;
+        if (pos) addX(div, pos);
+        return div;
     }
 
-    function addDeleteBtn(item, pos) {
-        const btn = document.createElement('button');
-        btn.className='delete-btn no-export'; btn.innerHTML='×';
-        btn.onclick=function(){
-            item.remove();
-            delete db[grupoActivo][pos];
-            saveDB();
-        };
-        item.appendChild(btn);
-    }
-
-    // CARGAR EXCEL (CSV)
-    function cargarCSV(input) {
+    function cargarCSVInteligente(input) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const lines = e.target.result.split('\n');
-            const pool = document.getElementById('materia-pool');
-            pool.innerHTML = '';
             lines.forEach((line, i) => {
-                if (i === 0 || !line.trim()) return; 
-                const parts = line.split(',');
-                if (parts.length >= 3) {
-                    const card = createCard(parts[0].trim(), parts[1].trim(), parts[2].trim().replace('\r', ''));
-                    pool.appendChild(card);
+                if (i === 0 || !line.trim()) return;
+                const [mat, prof, col, grupo, bloque, dia] = line.split(',');
+                if (grupo && bloque && dia) {
+                    const cleanG = grupo.trim();
+                    const cleanPos = `${bloque.trim()}-${dia.trim()}`;
+                    if (db[cleanG]) {
+                        db[cleanG][cleanPos] = { m: mat.trim(), p: prof.trim(), c: col.trim() };
+                    }
                 }
             });
-            new Sortable(pool, { group: { name: 'materias', pull: 'clone', put: false }, sort: false, animation: 150 });
+            save(); cambiarGrupo(grupoActivo);
+            alert("¡Horarios cargados desde Excel con éxito!");
         };
         reader.readAsText(input.files[0]);
     }
 
-    function saveDB() { localStorage.setItem('aqr_master_db', JSON.stringify(db)); }
-
-    function exportarPDF() {
-        const elemento = document.getElementById('capture-area');
-        const nombreGrupo = document.getElementById('grupo-titulo').innerText.trim();
-        const opciones = {
-            margin: [10, 5, 10, 5],
-            filename: `Horario_${nombreGrupo}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, windowWidth: document.documentElement.offsetWidth },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-        };
-        html2pdf().set(opciones).from(elemento).save();
+    function save() { localStorage.setItem('aqr_v3_db', JSON.stringify(db)); }
+    function exportarPDF() { 
+        const area = document.getElementById('capture-area');
+        html2pdf().set({ margin: 10, filename: `Horario_${grupoActivo}.pdf`, html2canvas: { scale: 2 } }).from(area).save();
     }
 
-    // INICIO
-    window.onload = () => cambiarGrupo("1A");
+    window.onload = () => { renderTabs(); cambiarGrupo("1A"); };
 </script>
-
 </body>
 </html>
