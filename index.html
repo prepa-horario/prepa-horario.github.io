@@ -52,7 +52,7 @@
 
 <div id="sidebar">
     <h2 style="margin-bottom: 5px;">Creador de Horarios</h2>
-    <p style="font-size: 11px; color: #94a3b8; margin-bottom: 20px;">ir al excel para modificar <a href="https://docs.google.com/spreadsheets/d/1HiutzvGFlvBurHu0IR5gh-GSSR7NL7s52ZPtvVIUbgM/edit?gid=0#gid=0" target="_blank" style="color:#60a5fa">click aqui</a> </p>
+    <p style="font-size: 11px; color: #94a3b8; margin-bottom: 20px;">Excel de origen <a href="https://docs.google.com/spreadsheets/d/1HiutzvGFlvBurHu0IR5gh-GSSR7NL7s52ZPtvVIUbgM/edit#gid=0" target="_blank" style="color:#60a5fa">click aquí</a> </p>
     
     <button class="btn btn-sync" onclick="syncWithGoogle()">SINCRONIZAR EXCEL</button>
     <button class="btn btn-clear" onclick="clearLocalMemory()">BORRAR MEMORIA LOCAL</button>
@@ -135,18 +135,23 @@
 
     async function syncWithGoogle() {
         try {
-            const response = await fetch(SHEETS_URL);
+            // Anti-Cache forzado
+            const antiCacheUrl = SHEETS_URL + "&t=" + Math.random();
+            const response = await fetch(antiCacheUrl);
             const csvData = await response.text();
             const rows = csvData.split('\n');
 
-            // --- REINICIO TOTAL PARA LIMPIEZA ---
+            // Limpieza total antes de procesar
             database = {};
             grupos.forEach(g => database[g] = {});
-            
+            document.querySelectorAll('.target-cell').forEach(c => c.innerHTML = '');
+
             rows.forEach((row, i) => {
                 if(i === 0 || !row.trim()) return;
                 const cols = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.trim().replace(/^"|"$/g, ''));
-                if(cols.length < 6) return;
+                
+                // Si la primera columna (materia) está vacía, saltar
+                if(cols.length < 6 || !cols[0]) return;
                 
                 const [mat, prof, col, grupo, bloque, dia] = cols;
                 if (!dia || !grupo) return;
@@ -155,26 +160,34 @@
                 const gKey = grupo.toUpperCase();
 
                 if(database[gKey] && dIdx !== undefined) {
-                    const bloquesArray = bloque.toString().split(/[\s,.-]+/); 
+                    // Soporte para bloques con ESPACIOS (ej: 1 2 5)
+                    const bloquesArray = bloque.toString().split(/\s+/); 
                     bloquesArray.forEach(b => {
                         const bNum = b.trim();
                         if(bNum) {
-                            database[gKey][`${bNum}-${dIdx}`] = { m: mat, p: prof, c: col.replace(/\s+/g, '').toLowerCase() };
+                            database[gKey][`${bNum}-${dIdx}`] = { 
+                                m: mat, 
+                                p: prof, 
+                                c: col.replace(/\s+/g, '').toLowerCase() 
+                            };
                         }
                     });
                 }
             });
-            save(); updateView();
-            alert("Sincronización limpia completada.");
-        } catch (e) { alert("Error al conectar con Google Sheets."); }
+
+            save(); 
+            updateView();
+            alert("Sincronización forzada completada con éxito.");
+        } catch (e) { 
+            console.error(e);
+            alert("Error al conectar con Google Sheets."); 
+        }
     }
 
     function clearLocalMemory() {
-        if(confirm("¿Seguro? Se borrará todo lo guardado en el navegador.")) {
-            localStorage.removeItem('aqr_v_classic_db');
-            database = {};
-            grupos.forEach(g => database[g] = {});
-            updateView();
+        if(confirm("¿Seguro? Se borrará todo lo guardado en este navegador.")) {
+            localStorage.clear();
+            location.reload();
         }
     }
 
