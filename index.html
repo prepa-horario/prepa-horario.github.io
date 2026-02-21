@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario AQR - Final Fix</title>
+    <title>Horario AQR - Sistema Maestro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -15,177 +15,71 @@
             --sidebar-width: 260px;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            margin: 0;
-            background: #f1f5f9;
-        }
+        body { font-family: Arial, sans-serif; display: flex; margin: 0; background: #f1f5f9; }
 
-        /* Interfaz lateral */
-        .top-controls {
-            position: fixed; left: 10px; top: 10px;
-            z-index: 1000; display: flex; gap: 10px;
-        }
-
-        .btn-ui {
-            background: var(--accent); color: white; border: none;
-            padding: 10px 15px; border-radius: 5px; cursor: pointer;
-            font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
+        /* Estilos de la Interfaz */
+        .top-controls { position: fixed; left: 10px; top: 10px; z-index: 1000; display: flex; gap: 10px; }
+        .btn-ui { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .btn-pdf { background: #e74c3c; }
+        .btn-csv { background: #10b981; }
 
         #sidebar {
             width: var(--sidebar-width); height: 100vh;
             background: var(--bg-sidebar); color: white;
             padding: 70px 15px 15px 15px; position: fixed;
             left: 0; transition: transform 0.3s ease;
-            z-index: 100; box-sizing: border-box;
-            overflow-y: auto;
+            z-index: 100; box-sizing: border-box; overflow-y: auto;
         }
 
         #sidebar.hidden { transform: translateX(-100%); }
 
         #main-content {
             margin-left: var(--sidebar-width); 
-            padding: 20px;
-            width: calc(100% - var(--sidebar-width)); 
-            transition: all 0.3s ease;
-            display: flex; 
-            justify-content: center;
+            padding: 20px; width: calc(100% - var(--sidebar-width)); 
+            transition: all 0.3s ease; display: flex; flex-direction: column; align-items: center;
         }
-
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* AREA DE CAPTURA PDF - OPTIMIZADA */
+        /* Selector de Grupos */
+        .group-tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+        .tab-btn { background: #475569; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .tab-btn.active { background: var(--accent); font-weight: bold; }
+
+        /* AREA DE CAPTURA PDF (Tu base fiel) */
         #capture-area { 
-            background: white; 
-            padding: 8mm; 
-            width: 200mm; /* Un poco menos de 210 para dejar margen de seguridad */
-            box-sizing: border-box;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
+            background: white; padding: 8mm; width: 200mm; 
+            box-sizing: border-box; margin: 0 auto;
+            display: flex; flex-direction: column;
         }
 
-        .header-institucional { 
-            display: flex; justify-content: space-between; align-items: center; 
-            text-align: center; margin-bottom: 15px; 
-        }
+        .header-institucional { display: flex; justify-content: space-between; align-items: center; text-align: center; margin-bottom: 15px; }
         .header-institucional img { height: 75px; width: auto; }
         .header-text h1 { font-size: 11pt; margin: 1px 0; font-weight: bold; }
         .header-text h2 { font-size: 9pt; margin: 1px 0; font-weight: normal; }
         #grupo-titulo { font-size: 10pt; margin: 5px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 10px; outline: none; font-weight: bold; }
 
-        /* CUADRICULA */
-        .schedule-container {
-            border: 1px solid var(--border-color);
-            background: var(--border-color);
-            display: flex;
-            flex-direction: column;
-            gap: 1px;
-        }
+        .schedule-container { border: 1px solid var(--border-color); background: var(--border-color); display: flex; flex-direction: column; gap: 1px; }
+        .schedule-row { display: flex; background: var(--border-color); gap: 1px; min-height: 52px; }
+        .row-header { min-height: 30px !important; }
 
-        .schedule-row {
-            display: flex;
-            background: var(--border-color);
-            gap: 1px;
-            min-height: 52px; /* Reducido ligeramente para ganar espacio vertical */
-        }
+        .cell { background: #ffffff; flex: 1; display: flex; align-items: stretch; justify-content: center; position: relative; }
+        .cell-time { flex: 0 0 75px; background: #ffffff; font-size: 7.5pt; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .cell-header { background: #ffffff; font-weight: bold; font-size: 8.5pt; display: flex; align-items: center; justify-content: center; padding: 4px 0; }
 
-        .row-header {
-            min-height: 30px !important;
-        }
-
-        .cell {
-            background: #ffffff;
-            flex: 1;
-            display: flex;
-            align-items: stretch;
-            justify-content: center;
-            position: relative;
-        }
-
-        .cell-time {
-            flex: 0 0 75px; 
-            background: #ffffff;
-            font-size: 7.5pt;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
-        .cell-header {
-            background: #ffffff;
-            font-weight: bold;
-            font-size: 8.5pt;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 4px 0;
-        }
-
-        /* MATERIAS */
+        /* MATERIAS - Diseño final */
         .materia-card {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 4px; 
-            color: black;
-            font-size: 10px;
-            line-height: 1.1;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: normal;
-            box-sizing: border-box;
-            cursor: grab;
+            width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 4px; color: black; font-size: 9px; line-height: 1.1;
+            word-wrap: break-word; box-sizing: border-box; cursor: grab;
         }
+        .materia-card b { font-size: 10px; display: block; }
+        .materia-card i { font-size: 8px; opacity: 0.8; margin-top: 2px; }
 
-        .recesso-row-style {
-            background: #f5f5f5 !important;
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            letter-spacing: 12px;
-            font-weight: bold;
-            font-size: 9pt;
-            min-height: 30px;
-        }
+        .recesso-row-style { background: #f5f5f5 !important; flex: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 12px; font-weight: bold; font-size: 9pt; min-height: 30px; }
+        .signature { margin-top: 10px; text-align: center; font-size: 7.5pt; color: #64748b; font-style: italic; width: 100%; }
 
-        .signature {
-            margin-top: 10px;
-            text-align: center;
-            font-size: 7.5pt;
-            color: #64748b;
-            font-style: italic;
-            width: 100%;
-        }
-
-        #materia-pool .materia-card {
-            margin-bottom: 6px;
-            border-radius: 3px;
-            min-height: 35px;
-            color: black; /* En el pool se ven blancas para contraste */ /* mejor black gng */
-        }
-
-        .delete-btn {
-            position: absolute; top: 1px; right: 1px;
-            background: rgba(0,0,0,0.2); color: white; border: none;
-            border-radius: 50%; width: 14px; height: 14px; 
-            font-size: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            z-index: 10;
-        }
-
-        .input-group { margin-bottom: 15px; display: flex; flex-direction: column; }
-        .input-group label { font-size: 11px; color: #cbd5e1; margin-bottom: 5px; }
-        textarea { padding: 8px; border-radius: 4px; border: none; font-size: 12px; font-family: Arial; }
-
+        #materia-pool .materia-card { margin-bottom: 6px; border-radius: 3px; min-height: 35px; border: 1px solid rgba(0,0,0,0.1); }
+        .delete-btn { position: absolute; top: 1px; right: 1px; background: rgba(0,0,0,0.2); color: white; border: none; border-radius: 50%; width: 14px; height: 14px; font-size: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 10; }
         .no-export { display: none !important; }
     </style>
 </head>
@@ -193,32 +87,28 @@
 
 <div class="top-controls">
     <button class="btn-ui" onclick="toggleSidebar()">☰ Panel</button>
+    <button class="btn-ui btn-csv" onclick="document.getElementById('csvInput').click()">📂 Cargar CSV</button>
     <button class="btn-ui btn-pdf" onclick="exportarPDF()">⬇ Descargar PDF</button>
+    <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="cargarCSV(this)">
 </div>
 
 <div id="sidebar">
     <h2 style="font-size: 1rem; margin-top:0">Materias</h2>
-    <div class="input-group">
-        <label>Nombre:</label>
-        <textarea id="materiaName" rows="3" placeholder='Escribir nombre...'></textarea>
-    </div>
-    <div class="input-group">
-        <label>Color:</label>
-        <input type="color" id="materiaColor" value="#5dade2" style="width:100%; height:30px; border:none; cursor:pointer">
-    </div>
-    <button class="btn-ui" style="width:100%" onclick="addNewMateria()">+ Crear</button>
-    <div id="materia-pool" style="margin-top:15px; border: 1px dashed #475569; padding: 10px;"></div>
+    <p style="font-size: 10px; color: #cbd5e1; margin-bottom: 10px;">Arrastra las materias al horario. El sistema bloqueará si el profe ya tiene clase.</p>
+    <div id="materia-pool" style="border: 1px dashed #475569; padding: 10px; min-height: 100px;"></div>
 </div>
 
 <div id="main-content">
+    <div class="group-tabs no-export" id="tabs-container"></div>
+
     <div id="capture-area">
         <div class="header-institucional">
             <img src="AQR.jpg" alt="AQR">
             <div class="header-text">
                 <h1 contenteditable="true">PREPARATORIA FEDERAL POR COOPERACIÓN</h1>
                 <h1 contenteditable="true">“ANDRÉS QUINTANA ROO”</h1>
-                <h2 contenteditable="true">HORARIO DEL SEMESTRE “X” DEL CICLO ESCOLAR 20XX-20XX</h2>
-                <h3 id="grupo-titulo" contenteditable="true">(GRUPO Y ESPECIALIDAD)</h3>
+                <h2 contenteditable="true">HORARIO DEL SEMESTRE “B” - CICLO 2025-2026</h2>
+                <h3 id="grupo-titulo" contenteditable="true">GRUPO 1A</h3>
             </div>
             <img src="DRAGONES.jpg" alt="DRAGONES">
         </div>
@@ -240,20 +130,28 @@
 </div>
 
 <script>
+    const grupos = ["1A", "1B", "1C", "2A", "2B", "2C", "3A", "3B", "3C"];
+    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECESSO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
+    let grupoActivo = "1A";
+    
+    // Base de datos de horarios (Memoria)
+    let db = JSON.parse(localStorage.getItem('aqr_master_db')) || {};
+    grupos.forEach(g => { if(!db[g]) db[g] = {}; });
+
     function toggleSidebar() {
         document.getElementById('sidebar').classList.toggle('hidden');
         document.getElementById('main-content').classList.toggle('full-width');
     }
 
+    // Inicializar Tablero
     const container = document.getElementById('schedule-body');
-    const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECESSO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
-
-    bloques.forEach(info => {
+    bloques.forEach((info, bIdx) => {
         const row = document.createElement('div');
-        row.className = 'schedule-row';
+        row.className = 'schedule-row' + (info === "RECESSO" ? " row-header" : "");
+        
         const timeCell = document.createElement('div');
         timeCell.className = 'cell cell-time';
-        timeCell.innerText = info === "RECESSO" ? "09:30 - 10:00" : info;
+        timeCell.innerText = info === "RECESSO" ? "09:30-10:00" : info;
         row.appendChild(timeCell);
 
         if (info === "RECESSO") {
@@ -262,64 +160,141 @@
             recessoCell.innerText = "RECESSO";
             row.appendChild(recessoCell);
         } else {
-            for (let i = 0; i < 6; i++) {
+            for (let dIdx = 0; dIdx < 6; dIdx++) {
                 const dayCell = document.createElement('div');
-                dayCell.className = 'cell';
+                dayCell.className = 'cell target-cell';
+                dayCell.dataset.pos = `${bIdx}-${dIdx}`;
                 row.appendChild(dayCell);
-                new Sortable(dayCell, { group: 'materias', animation: 150, onAdd: function(evt){
-                    const item = evt.item;
-                    if(!item.querySelector('.delete-btn')){
-                        const btn = document.createElement('button');
-                        btn.className='delete-btn'; btn.innerHTML='×';
-                        btn.onclick=function(){item.remove();}; item.appendChild(btn);
+
+                new Sortable(dayCell, {
+                    group: 'materias',
+                    animation: 150,
+                    onAdd: function(evt) {
+                        const item = evt.item;
+                        const pos = dayCell.dataset.pos;
+                        const profe = item.dataset.profe;
+
+                        // VALIDACIÓN: ¿Profe ocupado en otro grupo a esta hora?
+                        let conflicto = false;
+                        let grupoConflictivo = "";
+                        
+                        grupos.forEach(g => {
+                            if (g !== grupoActivo && db[g][pos] && db[g][pos].profe === profe) {
+                                conflicto = true;
+                                grupoConflictivo = g;
+                            }
+                        });
+
+                        if (conflicto) {
+                            alert(`❌ ERROR: El profesor ${profe} ya tiene clase en el grupo ${grupoConflictivo} a esta hora.`);
+                            evt.from.appendChild(item); // Lo devuelve
+                            return;
+                        }
+
+                        // Guardar en DB
+                        db[grupoActivo][pos] = {
+                            materia: item.dataset.materia,
+                            profe: item.dataset.profe,
+                            color: item.dataset.color
+                        };
+                        saveDB();
+                        
+                        if(!item.querySelector('.delete-btn')){
+                            addDeleteBtn(item, pos);
+                        }
                     }
-                }});
+                });
             }
         }
         container.appendChild(row);
     });
 
-    new Sortable(document.getElementById('materia-pool'), {
-        group: { name: 'materias', pull: 'clone', put: false },
-        animation: 150, sort: false
+    function addDeleteBtn(item, pos) {
+        const btn = document.createElement('button');
+        btn.className='delete-btn no-export'; btn.innerHTML='×';
+        btn.onclick=function(){
+            item.remove();
+            delete db[grupoActivo][pos];
+            saveDB();
+        };
+        item.appendChild(btn);
+    }
+
+    // Tabs
+    const tabsContainer = document.getElementById('tabs-container');
+    grupos.forEach(g => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn' + (g === grupoActivo ? ' active' : '');
+        btn.innerText = g;
+        btn.onclick = () => cambiarGrupo(g);
+        tabsContainer.appendChild(btn);
     });
 
-    function addNewMateria() {
-        const name = document.getElementById('materiaName').value;
-        const color = document.getElementById('materiaColor').value;
-        if (!name) return;
+    function cambiarGrupo(g) {
+        grupoActivo = g;
+        document.getElementById('grupo-titulo').innerText = `GRUPO ${g}`;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText === g));
+        
+        // Cargar datos del grupo
+        document.querySelectorAll('.target-cell').forEach(cell => {
+            cell.innerHTML = '';
+            const data = db[g][cell.dataset.pos];
+            if (data) {
+                const card = createCard(data.materia, data.profe, data.color, cell.dataset.pos);
+                cell.appendChild(card);
+            }
+        });
+    }
+
+    function createCard(m, p, c, pos = null) {
         const card = document.createElement('div');
         card.className = 'materia-card';
-        card.style.backgroundColor = color;
-        card.innerText = name; 
-        document.getElementById('materia-pool').appendChild(card);
-        document.getElementById('materiaName').value = "";
+        card.style.backgroundColor = c;
+        card.dataset.materia = m;
+        card.dataset.profe = p;
+        card.dataset.color = c;
+        card.innerHTML = `<b>${m}</b><i>${p}</i>`;
+        if (pos) addDeleteBtn(card, pos);
+        return card;
     }
+
+    function cargarCSV(input) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const lines = e.target.result.split('\n');
+            const pool = document.getElementById('materia-pool');
+            pool.innerHTML = '';
+            lines.forEach((line, i) => {
+                if (i === 0 || !line.trim()) return; // Saltar cabecera
+                const [materia, profe, color] = line.split(',');
+                if (materia && profe && color) {
+                    const card = createCard(materia.trim(), profe.trim(), color.trim().replace('\r', ''));
+                    pool.appendChild(card);
+                }
+            });
+            // Habilitar Sortable en el pool
+            new Sortable(pool, { group: { name: 'materias', pull: 'clone', put: false }, sort: false, animation: 150 });
+        };
+        reader.readAsText(input.files[0]);
+    }
+
+    function saveDB() { localStorage.setItem('aqr_master_db', JSON.stringify(db)); }
 
     function exportarPDF() {
         const elemento = document.getElementById('capture-area');
         const nombreGrupo = document.getElementById('grupo-titulo').innerText.trim();
-        const botonesBorrar = document.querySelectorAll('.delete-btn');
-        botonesBorrar.forEach(btn => btn.classList.add('no-export'));
-
         const opciones = {
-            margin: [10, 5, 10, 5], 
+            margin: [10, 5, 10, 5],
             filename: `Horario_${nombreGrupo}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { 
-                scale: 2, 
-                useCORS: true, 
-                scrollY: 0, 
-                scrollX: 0,
-                windowWidth: document.documentElement.offsetWidth
-            },
+            html2canvas: { scale: 2, useCORS: true, scrollY: 0, scrollX: 0, windowWidth: document.documentElement.offsetWidth },
             jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
         };
-
-        html2pdf().set(opciones).from(elemento).save().then(() => {
-            botonesBorrar.forEach(btn => btn.classList.remove('no-export'));
-        });
+        html2pdf().set(opciones).from(elemento).save();
     }
+
+    // Carga inicial
+    cambiarGrupo("1A");
 </script>
 
 </body>
