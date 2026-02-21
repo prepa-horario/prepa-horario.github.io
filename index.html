@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Horario AQR - Sistema Maestro</title>
+    <title>Sistema Maestro AQR - R.A.T.S</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
@@ -17,7 +17,7 @@
 
         body { font-family: Arial, sans-serif; display: flex; margin: 0; background: #f1f5f9; }
 
-        /* Estilos de la Interfaz */
+        /* Interfaz lateral */
         .top-controls { position: fixed; left: 10px; top: 10px; z-index: 1000; display: flex; gap: 10px; }
         .btn-ui { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .btn-pdf { background: #e74c3c; }
@@ -40,12 +40,16 @@
         }
         #main-content.full-width { margin-left: 0; width: 100%; }
 
-        /* Selector de Grupos */
-        .group-tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
-        .tab-btn { background: #475569; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
-        .tab-btn.active { background: var(--accent); font-weight: bold; }
+        /* Barra de Pestañas de Grupos */
+        .group-tabs { 
+            display: flex; gap: 5px; margin-top: 45px; margin-bottom: 15px; 
+            flex-wrap: wrap; justify-content: center; max-width: 800px;
+        }
+        .tab-btn { background: #475569; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .tab-btn:hover { background: #64748b; }
+        .tab-btn.active { background: var(--accent); font-weight: bold; box-shadow: 0 0 10px rgba(59, 130, 246, 0.5); }
 
-        /* AREA DE CAPTURA PDF (Tu base fiel) */
+        /* AREA DE CAPTURA PDF (Tu base original optimizada) */
         #capture-area { 
             background: white; padding: 8mm; width: 200mm; 
             box-sizing: border-box; margin: 0 auto;
@@ -56,8 +60,9 @@
         .header-institucional img { height: 75px; width: auto; }
         .header-text h1 { font-size: 11pt; margin: 1px 0; font-weight: bold; }
         .header-text h2 { font-size: 9pt; margin: 1px 0; font-weight: normal; }
-        #grupo-titulo { font-size: 10pt; margin: 5px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 10px; outline: none; font-weight: bold; }
+        #grupo-titulo { font-size: 10pt; margin: 5px 0; border-bottom: 1.5px solid black; display: inline-block; padding: 0 10px; outline: none; font-weight: bold; text-transform: uppercase; }
 
+        /* CUADRICULA */
         .schedule-container { border: 1px solid var(--border-color); background: var(--border-color); display: flex; flex-direction: column; gap: 1px; }
         .schedule-row { display: flex; background: var(--border-color); gap: 1px; min-height: 52px; }
         .row-header { min-height: 30px !important; }
@@ -66,14 +71,14 @@
         .cell-time { flex: 0 0 75px; background: #ffffff; font-size: 7.5pt; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; }
         .cell-header { background: #ffffff; font-weight: bold; font-size: 8.5pt; display: flex; align-items: center; justify-content: center; padding: 4px 0; }
 
-        /* MATERIAS - Diseño final */
+        /* MATERIAS CARDS */
         .materia-card {
             width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; padding: 4px; color: black; font-size: 9px; line-height: 1.1;
             word-wrap: break-word; box-sizing: border-box; cursor: grab;
         }
-        .materia-card b { font-size: 10px; display: block; }
-        .materia-card i { font-size: 8px; opacity: 0.8; margin-top: 2px; }
+        .materia-card b { font-size: 10px; display: block; margin-bottom: 1px; }
+        .materia-card i { font-size: 8px; opacity: 0.8; font-style: normal; display: block; }
 
         .recesso-row-style { background: #f5f5f5 !important; flex: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 12px; font-weight: bold; font-size: 9pt; min-height: 30px; }
         .signature { margin-top: 10px; text-align: center; font-size: 7.5pt; color: #64748b; font-style: italic; width: 100%; }
@@ -87,14 +92,14 @@
 
 <div class="top-controls">
     <button class="btn-ui" onclick="toggleSidebar()">☰ Panel</button>
-    <button class="btn-ui btn-csv" onclick="document.getElementById('csvInput').click()">📂 Cargar CSV</button>
+    <button class="btn-ui btn-csv" onclick="document.getElementById('csvInput').click()">📂 Cargar CSV (Excel)</button>
     <button class="btn-ui btn-pdf" onclick="exportarPDF()">⬇ Descargar PDF</button>
     <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="cargarCSV(this)">
 </div>
 
 <div id="sidebar">
     <h2 style="font-size: 1rem; margin-top:0">Materias</h2>
-    <p style="font-size: 10px; color: #cbd5e1; margin-bottom: 10px;">Arrastra las materias al horario. El sistema bloqueará si el profe ya tiene clase.</p>
+    <p style="font-size: 10px; color: #cbd5e1; margin-bottom: 15px;">1. Carga tu CSV.<br>2. Arrastra al horario.<br>3. Cambia de grupo arriba.</p>
     <div id="materia-pool" style="border: 1px dashed #475569; padding: 10px; min-height: 100px;"></div>
 </div>
 
@@ -123,18 +128,19 @@
                 <div class="cell cell-header">VIERNES</div>
                 <div class="cell cell-header">SÁBADO</div>
             </div>
-        </div>
+            </div>
 
         <div class="signature">R.A.T.S</div>
     </div>
 </div>
 
 <script>
+    // CONFIGURACIÓN INICIAL
     const grupos = ["1A", "1B", "1C", "2A", "2B", "2C", "3A", "3B", "3C"];
     const bloques = ["07:00 - 07:50", "07:50 - 08:40", "08:40 - 09:30", "RECESSO", "10:00 - 10:50", "10:50 - 11:40", "11:40 - 12:30", "12:30 - 13:20", "13:20 - 14:10"];
     let grupoActivo = "1A";
     
-    // Base de datos de horarios (Memoria)
+    // BASE DE DATOS LOCAL
     let db = JSON.parse(localStorage.getItem('aqr_master_db')) || {};
     grupos.forEach(g => { if(!db[g]) db[g] = {}; });
 
@@ -143,7 +149,7 @@
         document.getElementById('main-content').classList.toggle('full-width');
     }
 
-    // Inicializar Tablero
+    // RENDERIZAR LA TABLA
     const container = document.getElementById('schedule-body');
     bloques.forEach((info, bIdx) => {
         const row = document.createElement('div');
@@ -174,7 +180,7 @@
                         const pos = dayCell.dataset.pos;
                         const profe = item.dataset.profe;
 
-                        // VALIDACIÓN: ¿Profe ocupado en otro grupo a esta hora?
+                        // VALIDACIÓN DE PROFESOR OCUPADO
                         let conflicto = false;
                         let grupoConflictivo = "";
                         
@@ -186,22 +192,19 @@
                         });
 
                         if (conflicto) {
-                            alert(`❌ ERROR: El profesor ${profe} ya tiene clase en el grupo ${grupoConflictivo} a esta hora.`);
-                            evt.from.appendChild(item); // Lo devuelve
+                            alert(`❌ BLOQUEO R.A.T.S:\nEl profesor ${profe} ya tiene clase asignada en el GRUPO ${grupoConflictivo} a esta misma hora.`);
+                            evt.from.appendChild(item);
                             return;
                         }
 
-                        // Guardar en DB
+                        // GUARDAR EN MEMORIA
                         db[grupoActivo][pos] = {
                             materia: item.dataset.materia,
                             profe: item.dataset.profe,
                             color: item.dataset.color
                         };
                         saveDB();
-                        
-                        if(!item.querySelector('.delete-btn')){
-                            addDeleteBtn(item, pos);
-                        }
+                        if(!item.querySelector('.delete-btn')) addDeleteBtn(item, pos);
                     }
                 });
             }
@@ -209,33 +212,25 @@
         container.appendChild(row);
     });
 
-    function addDeleteBtn(item, pos) {
-        const btn = document.createElement('button');
-        btn.className='delete-btn no-export'; btn.innerHTML='×';
-        btn.onclick=function(){
-            item.remove();
-            delete db[grupoActivo][pos];
-            saveDB();
-        };
-        item.appendChild(btn);
+    // SISTEMA DE PESTAÑAS
+    function renderTabs() {
+        const tabsContainer = document.getElementById('tabs-container');
+        tabsContainer.innerHTML = '';
+        grupos.forEach(g => {
+            const btn = document.createElement('button');
+            btn.className = 'tab-btn' + (g === grupoActivo ? ' active' : '');
+            btn.innerText = g;
+            btn.onclick = () => cambiarGrupo(g);
+            tabsContainer.appendChild(btn);
+        });
     }
-
-    // Tabs
-    const tabsContainer = document.getElementById('tabs-container');
-    grupos.forEach(g => {
-        const btn = document.createElement('button');
-        btn.className = 'tab-btn' + (g === grupoActivo ? ' active' : '');
-        btn.innerText = g;
-        btn.onclick = () => cambiarGrupo(g);
-        tabsContainer.appendChild(btn);
-    });
 
     function cambiarGrupo(g) {
         grupoActivo = g;
         document.getElementById('grupo-titulo').innerText = `GRUPO ${g}`;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.innerText === g));
+        renderTabs();
         
-        // Cargar datos del grupo
+        // Cargar celdas
         document.querySelectorAll('.target-cell').forEach(cell => {
             cell.innerHTML = '';
             const data = db[g][cell.dataset.pos];
@@ -246,6 +241,7 @@
         });
     }
 
+    // CREACIÓN DE TARJETAS
     function createCard(m, p, c, pos = null) {
         const card = document.createElement('div');
         card.className = 'materia-card';
@@ -258,6 +254,18 @@
         return card;
     }
 
+    function addDeleteBtn(item, pos) {
+        const btn = document.createElement('button');
+        btn.className='delete-btn no-export'; btn.innerHTML='×';
+        btn.onclick=function(){
+            item.remove();
+            delete db[grupoActivo][pos];
+            saveDB();
+        };
+        item.appendChild(btn);
+    }
+
+    // CARGAR EXCEL (CSV)
     function cargarCSV(input) {
         const reader = new FileReader();
         reader.onload = function(e) {
@@ -265,14 +273,13 @@
             const pool = document.getElementById('materia-pool');
             pool.innerHTML = '';
             lines.forEach((line, i) => {
-                if (i === 0 || !line.trim()) return; // Saltar cabecera
-                const [materia, profe, color] = line.split(',');
-                if (materia && profe && color) {
-                    const card = createCard(materia.trim(), profe.trim(), color.trim().replace('\r', ''));
+                if (i === 0 || !line.trim()) return; 
+                const parts = line.split(',');
+                if (parts.length >= 3) {
+                    const card = createCard(parts[0].trim(), parts[1].trim(), parts[2].trim().replace('\r', ''));
                     pool.appendChild(card);
                 }
             });
-            // Habilitar Sortable en el pool
             new Sortable(pool, { group: { name: 'materias', pull: 'clone', put: false }, sort: false, animation: 150 });
         };
         reader.readAsText(input.files[0]);
@@ -293,8 +300,8 @@
         html2pdf().set(opciones).from(elemento).save();
     }
 
-    // Carga inicial
-    cambiarGrupo("1A");
+    // INICIO
+    window.onload = () => cambiarGrupo("1A");
 </script>
 
 </body>
