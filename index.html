@@ -2,232 +2,216 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Maestro AQR - R.A.T.S</title>
+    <title>Sistema Maestro AQR - Conexión Directa</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    
     <style>
-        :root { --bg-sidebar: #1e293b; --border-color: #000000; --accent: #3b82f6; --sidebar-width: 260px; }
-        body { font-family: Arial, sans-serif; display: flex; margin: 0; background: #f1f5f9; }
-
-        /* Interfaz lateral */
-        .top-controls { position: fixed; left: 10px; top: 10px; z-index: 2000; display: flex; gap: 10px; }
-        .btn-ui { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        .btn-pdf { background: #e74c3c; } .btn-csv { background: #10b981; }
-
-        #sidebar {
-            width: var(--sidebar-width); height: 100vh; background: var(--bg-sidebar); color: white;
-            padding: 70px 15px 15px 15px; position: fixed; left: 0; z-index: 1000; box-sizing: border-box; overflow-y: auto;
-        }
-
-        #main-content {
-            margin-left: var(--sidebar-width); padding: 20px; width: calc(100% - var(--sidebar-width)); 
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
-
-        /* BARRA DE PESTAÑAS - CORREGIDA */
-        .group-tabs { 
-            display: flex; gap: 8px; margin-top: 60px; margin-bottom: 20px; 
-            flex-wrap: wrap; justify-content: center; z-index: 500; position: relative;
-        }
-        .tab-btn { background: #cbd5e1; color: #1e293b; border: 2px solid #94a3b8; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .tab-btn.active { background: var(--accent); color: white; border-color: var(--accent); box-shadow: 0 4px 10px rgba(59,130,246,0.3); }
-
-        /* CAPTURA PDF */
-        #capture-area { background: white; padding: 8mm; width: 200mm; box-sizing: border-box; margin: 0 auto; display: flex; flex-direction: column; }
-        .header-institucional { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .header-institucional img { height: 70px; }
-        .header-text h1 { font-size: 11pt; margin: 1px 0; font-weight: bold; text-align: center;}
-        #grupo-titulo { font-size: 11pt; font-weight: bold; border-bottom: 2px solid black; padding: 0 10px; margin-top: 10px; display: inline-block;}
-
-        /* TABLA */
-        .schedule-container { border: 1px solid black; background: black; display: flex; flex-direction: column; gap: 1px; }
-        .schedule-row { display: flex; background: black; gap: 1px; min-height: 52px; }
-        .row-header { min-height: 30px !important; }
-        .cell { background: white; flex: 1; display: flex; align-items: stretch; justify-content: center; position: relative; min-width: 0; }
-        .cell-time { flex: 0 0 75px; font-size: 7.5pt; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-
-        /* MATERIAS */
-        .materia-card {
-            width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 4px; font-size: 9px; cursor: grab; position: relative;
-        }
-        .materia-card b { font-size: 9.5px; }
+        :root { --bg-sidebar: #1e293b; --accent: #3b82f6; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; background: #f1f5f9; height: 100vh; overflow: hidden; }
         
-        .delete-btn { 
-            position: absolute; top: 1px; right: 1px; background: #ef4444; color: white; 
-            border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 50;
-        }
+        /* Panel Lateral */
+        #sidebar { width: 260px; background: var(--bg-sidebar); color: white; padding: 20px; box-sizing: border-box; z-index: 1000; }
+        #materia-pool { border: 2px dashed #475569; border-radius: 8px; height: 300px; padding: 10px; overflow-y: auto; margin-top: 15px; }
 
-        .recesso-row-style { background: #f1f5f9 !important; flex: 1; display: flex; align-items: center; justify-content: center; letter-spacing: 12px; font-weight: bold; font-size: 9pt; }
-        .signature { margin-top: 10px; text-align: center; font-size: 7.5pt; font-style: italic; }
+        /* Contenido Principal */
+        #main { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .top-nav { width: 100%; display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; }
+        .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.3s; }
+        .btn-sync { background: #3b82f6; } .btn-pdf { background: #ef4444; }
+
+        /* Pestañas */
+        .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+        .tab { padding: 6px 12px; background: #cbd5e1; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
+        .tab.active { background: var(--accent); color: white; transform: scale(1.1); }
+
+        /* Horario PDF */
+        #capture-area { background: white; padding: 10mm; width: 200mm; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .grid { display: flex; flex-direction: column; border: 1.5px solid black; background: black; gap: 1.5px; }
+        .row { display: flex; background: black; gap: 1.5px; min-height: 55px; }
+        .row-header { min-height: 35px !important; background: white; }
+        .cell { background: white; flex: 1; display: flex; align-items: stretch; justify-content: center; position: relative; }
+        .cell-time { flex: 0 0 75px; font-size: 7.5pt; font-weight: bold; display: flex; align-items: center; justify-content: center; text-align: center; }
+        
+        /* Card Materia */
+        .materia-card { width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 9px; padding: 4px; cursor: grab; color: black; }
+        .materia-card b { font-size: 10px; }
+        
+        /* X de Borrado */
+        .del-btn { position: absolute; top: 0; right: 0; background: red; color: white; border: none; width: 18px; height: 18px; cursor: pointer; font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center; z-index: 50; }
         .no-export { display: none !important; }
+
+        .recesso { background: #f1f5f9 !important; font-weight: bold; letter-spacing: 12px; font-size: 10pt; align-items: center; }
     </style>
 </head>
 <body>
 
-<div class="top-controls">
-    <button class="btn-ui btn-csv" onclick="document.getElementById('csvInput').click()">📂 Cargar Excel (CSV)</button>
-    <button class="btn-ui btn-pdf" onclick="exportarPDF()">⬇ Descargar PDF</button>
-    <input type="file" id="csvInput" accept=".csv" style="display:none" onchange="cargarCSVInteligente(this)">
-</div>
-
 <div id="sidebar">
-    <h2 style="font-size: 1rem; margin-top:0">Materias Pool</h2>
-    <div id="materia-pool" style="border: 1px dashed #475569; padding: 10px; min-height: 100px;"></div>
+    <h3 style="margin:0">AQR Admin</h3>
+    <p style="font-size: 10px; color: #94a3b8; margin-top:5px;">Los datos se cargan desde tu Google Sheets.</p>
+    <div id="materia-pool"></div>
+    <p style="font-size: 9px; margin-top: 20px; color: #475569;">Desarrollado para AQR<br>Versión 5.0 Cloud</p>
 </div>
 
-<div id="main-content">
-    <div class="group-tabs" id="tabs-container"></div>
+<div id="main">
+    <div class="top-nav">
+        <button class="btn btn-sync" onclick="syncWithGoogle()">🔄 Sincronizar con Google</button>
+        <button class="btn btn-pdf" onclick="exportPDF()">⬇ Descargar PDF</button>
+    </div>
 
+    <div class="tabs" id="tab-bar"></div>
+    
     <div id="capture-area">
-        <div class="header-institucional">
-            <img src="AQR.jpg" alt="AQR">
-            <div class="header-text" style="text-align: center;">
-                <h1>PREPARATORIA FEDERAL POR COOPERACIÓN “ANDRÉS QUINTANA ROO”</h1>
-                <h2 style="font-size: 9pt; margin: 0;">HORARIO ESCOLAR - CICLO 2025-2026</h2>
-                <div id="grupo-titulo">GRUPO 1A</div>
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 15px;">
+            <img src="AQR.jpg" style="height: 60px;">
+            <div style="text-align:center">
+                <h1 style="margin:0; font-size: 11pt;">ANDRÉS QUINTANA ROO</h1>
+                <h2 style="margin:0; font-size: 9pt; font-weight: normal;">HORARIO ESCOLAR - 2025-2026</h2>
+                <div id="current-group" style="margin-top:5px; font-weight:bold; border-bottom: 2px solid black; padding: 0 15px; display: inline-block;">GRUPO 1A</div>
             </div>
-            <img src="DRAGONES.jpg" alt="DRAGONES">
+            <img src="DRAGONES.jpg" style="height: 60px;">
         </div>
 
-        <div class="schedule-container" id="schedule-body">
-            <div class="schedule-row row-header">
-                <div class="cell cell-time" style="font-weight: bold;">HORA</div>
-                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">LUNES</div>
-                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">MARTES</div>
-                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">MIÉRCOLES</div>
-                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">JUEVES</div>
-                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">VIERNES</div>
-                <div class="cell" style="font-weight: bold; font-size: 8pt; align-items: center;">SÁBADO</div>
+        <div class="grid" id="grid-body">
+            <div class="row row-header">
+                <div class="cell cell-time">HORA</div>
+                <div class="cell">LUNES</div>
+                <div class="cell">MARTES</div>
+                <div class="cell">MIÉRCOLES</div>
+                <div class="cell">JUEVES</div>
+                <div class="cell">VIERNES</div>
+                <div class="cell">SÁBADO</div>
             </div>
         </div>
-        <div class="signature">R.A.T.S</div>
+        <p style="text-align:center; font-size: 7pt; margin-top: 10px; font-style: italic;">R.A.T.S</p>
     </div>
 </div>
 
 <script>
+    const SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5V41q3aGjOH5IsmJGWeS9VffmtrXvFXj9wv3o6Jda406EHASwcXO5SUQpQeqoJRY3hg4O8iKB5RoP/pub?output=csv";
     const grupos = ["1A", "1B", "1C", "2A", "2B", "2C", "3A", "3B", "3C"];
-    const bloques = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "RECESSO", "10:00-10:50", "10:50-11:40", "11:40-12:30", "12:30-13:20", "13:20-14:10"];
-    let grupoActivo = "1A";
-    let db = JSON.parse(localStorage.getItem('aqr_v3_db')) || {};
-    grupos.forEach(g => { if(!db[g]) db[g] = {}; });
+    const horas = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "RECESSO", "10:00-10:50", "10:50-11:40", "11:40-12:30", "12:30-13:20", "13:20-14:10"];
+    const diasMap = {"LUNES":0, "MARTES":1, "MIÉRCOLES":2, "MIERCOLES":2, "JUEVES":3, "VIERNES":4, "SÁBADO":5, "SABADO":5};
+    
+    let activeG = "1A";
+    let database = JSON.parse(localStorage.getItem('aqr_cloud_db')) || {};
+    grupos.forEach(g => { if(!database[g]) database[g] = {}; });
 
-    // RENDERIZAR ESTRUCTURA
-    const container = document.getElementById('schedule-body');
-    bloques.forEach((hora, bIdx) => {
-        const row = document.createElement('div');
-        row.className = 'schedule-row' + (hora === "RECESSO" ? " row-header" : "");
-        
-        const timeCell = document.createElement('div');
-        timeCell.className = 'cell cell-time';
-        timeCell.innerText = hora === "RECESSO" ? "09:30-10:00" : hora;
-        row.appendChild(timeCell);
-
-        if (hora === "RECESSO") {
-            row.innerHTML += `<div class="recesso-row-style">RECESSO</div>`;
-        } else {
-            for (let dIdx = 0; dIdx < 6; dIdx++) {
-                const cell = document.createElement('div');
-                cell.className = 'cell target-cell';
-                cell.dataset.pos = `${bIdx}-${dIdx}`;
-                row.appendChild(cell);
-
-                new Sortable(cell, {
-                    group: 'materias',
-                    animation: 150,
-                    onAdd: function(evt) {
-                        const item = evt.item;
-                        const pos = cell.dataset.pos;
-                        const profe = item.dataset.profe;
-
-                        // BLOQUEO DE PROFESOR
-                        let ocupado = false;
-                        grupos.forEach(g => {
-                            if (g !== grupoActivo && db[g][pos] && db[g][pos].profe === profe) {
-                                ocupado = true; alert(`¡ALERTA! El Profe ${profe} ya está en el grupo ${g}`);
-                                evt.from.appendChild(item);
-                            }
-                        });
-
-                        if (!ocupado) {
-                            db[grupoActivo][pos] = { m: item.dataset.m, p: item.dataset.profe, c: item.dataset.color };
-                            save();
-                            addX(item, pos);
-                        }
-                    }
-                });
+    function init() {
+        const body = document.getElementById('grid-body');
+        horas.forEach((h, idx) => {
+            if(idx === 0) return;
+            const row = document.createElement('div');
+            row.className = 'row';
+            row.innerHTML = `<div class="cell cell-time">${h === "RECESSO" ? "09:30-10:00" : h}</div>`;
+            
+            if(h === "RECESSO") {
+                row.innerHTML += `<div class="cell recesso">RECESSO</div>`;
+            } else {
+                for(let d=0; d<6; d++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell target';
+                    cell.dataset.pos = `${idx}-${d}`;
+                    row.appendChild(cell);
+                    new Sortable(cell, { group: 'materias', animation: 150, onAdd: (e) => handleDrop(e, cell.dataset.pos) });
+                }
             }
-        }
-        container.appendChild(row);
-    });
-
-    function addX(item, pos) {
-        if (item.querySelector('.delete-btn')) return;
-        const btn = document.createElement('button');
-        btn.className = 'delete-btn no-export'; btn.innerHTML = '×';
-        btn.onclick = () => { item.remove(); delete db[grupoActivo][pos]; save(); };
-        item.appendChild(btn);
-    }
-
-    function renderTabs() {
-        const tc = document.getElementById('tabs-container');
-        tc.innerHTML = grupos.map(g => `<button class="tab-btn ${g===grupoActivo?'active':''}" onclick="cambiarGrupo('${g}')">${g}</button>`).join('');
-    }
-
-    function cambiarGrupo(g) {
-        grupoActivo = g;
-        document.getElementById('grupo-titulo').innerText = `GRUPO ${g}`;
+            body.appendChild(row);
+        });
         renderTabs();
-        document.querySelectorAll('.target-cell').forEach(cell => {
-            cell.innerHTML = '';
-            const data = db[g][cell.dataset.pos];
-            if (data) {
-                const card = createCard(data.m, data.p, data.c, cell.dataset.pos);
-                cell.appendChild(card);
+        updateView();
+    }
+
+    async function syncWithGoogle() {
+        try {
+            const response = await fetch(SHEETS_URL);
+            const data = await response.text();
+            const rows = data.split('\n');
+            
+            // Limpiar DB para carga fresca
+            grupos.forEach(g => database[g] = {});
+
+            rows.forEach((row, i) => {
+                if(i === 0 || !row.trim()) return;
+                const columns = row.split(',');
+                if(columns.length < 6) return;
+
+                const [mat, prof, col, grupo, bloque, dia] = columns.map(c => c.trim());
+                const dIdx = diasMap[dia.toUpperCase()];
+                const gKey = grupo.toUpperCase();
+
+                if(database[gKey] && dIdx !== undefined) {
+                    // Quitamos espacios de nombres de colores de Excel (ej: "Light Blue" -> "lightblue")
+                    const cleanColor = col.replace(/\s+/g, '').toLowerCase();
+                    database[gKey][`${bloque}-${dIdx}`] = { m: mat, p: prof, c: cleanColor };
+                }
+            });
+            
+            save();
+            updateView();
+            alert("✅ Sincronizado con Google Sheets correctamente.");
+        } catch (error) {
+            alert("❌ Error al conectar con Google Sheets. Asegúrate de que esté publicado como CSV.");
+        }
+    }
+
+    function handleDrop(e, pos) {
+        const item = e.item;
+        const prof = item.dataset.profe;
+        let clash = false;
+        
+        grupos.forEach(g => {
+            if(g !== activeG && database[g][pos] && database[g][pos].p === prof) {
+                clash = true;
+                alert(`⚠️ CHOQUE DE MAESTRO: ${prof} ya tiene clase en el grupo ${g} a esta hora.`);
+                e.from.appendChild(item);
+            }
+        });
+
+        if(!clash) {
+            database[activeG][pos] = { m: item.dataset.m, p: prof, c: item.dataset.color };
+            save();
+            attachDelBtn(item, pos);
+        }
+    }
+
+    function attachDelBtn(card, pos) {
+        if(card.querySelector('.del-btn')) return;
+        const b = document.createElement('button');
+        b.className = 'del-btn no-export'; b.innerHTML = '×';
+        b.onclick = () => { card.remove(); delete database[activeG][pos]; save(); };
+        card.appendChild(b);
+    }
+
+    function updateView() {
+        document.querySelectorAll('.target').forEach(c => {
+            c.innerHTML = '';
+            const data = database[activeG][c.dataset.pos];
+            if(data) {
+                const card = document.createElement('div');
+                card.className = 'materia-card'; card.style.backgroundColor = data.c;
+                card.dataset.m = data.m; card.dataset.profe = data.p; card.dataset.color = data.c;
+                card.innerHTML = `<b>${data.m}</b><span>${data.p}</span>`;
+                attachDelBtn(card, c.dataset.pos);
+                c.appendChild(card);
             }
         });
     }
 
-    function createCard(m, p, c, pos = null) {
-        const div = document.createElement('div');
-        div.className = 'materia-card'; div.style.backgroundColor = c;
-        div.dataset.m = m; div.dataset.profe = p; div.dataset.color = c;
-        div.innerHTML = `<b style="color:black">${m}</b><span style="font-size:8px; color:black">${p}</span>`;
-        if (pos) addX(div, pos);
-        return div;
+    function renderTabs() {
+        document.getElementById('tab-bar').innerHTML = grupos.map(g => 
+            `<button class="tab ${g===activeG?'active':''}" onclick="changeG('${g}')">${g}</button>`).join('');
     }
 
-    function cargarCSVInteligente(input) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n');
-            lines.forEach((line, i) => {
-                if (i === 0 || !line.trim()) return;
-                const [mat, prof, col, grupo, bloque, dia] = line.split(',');
-                if (grupo && bloque && dia) {
-                    const cleanG = grupo.trim();
-                    const cleanPos = `${bloque.trim()}-${dia.trim()}`;
-                    if (db[cleanG]) {
-                        db[cleanG][cleanPos] = { m: mat.trim(), p: prof.trim(), c: col.trim() };
-                    }
-                }
-            });
-            save(); cambiarGrupo(grupoActivo);
-            alert("¡Horarios cargados desde Excel con éxito!");
-        };
-        reader.readAsText(input.files[0]);
-    }
-
-    function save() { localStorage.setItem('aqr_v3_db', JSON.stringify(db)); }
-    function exportarPDF() { 
+    function changeG(g) { activeG = g; document.getElementById('current-group').innerText = `GRUPO ${g}`; renderTabs(); updateView(); }
+    function save() { localStorage.setItem('aqr_cloud_db', JSON.stringify(database)); }
+    
+    function exportPDF() { 
         const area = document.getElementById('capture-area');
-        html2pdf().set({ margin: 10, filename: `Horario_${grupoActivo}.pdf`, html2canvas: { scale: 2 } }).from(area).save();
+        html2pdf().set({ margin:5, filename:`Horario_${activeG}.pdf`, html2canvas:{scale:2} }).from(area).save();
     }
 
-    window.onload = () => { renderTabs(); cambiarGrupo("1A"); };
+    init();
 </script>
 </body>
 </html>
