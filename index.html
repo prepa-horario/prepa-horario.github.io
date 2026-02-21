@@ -2,39 +2,34 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>AQR Control Maestro - Sistema R.A.T.S</title>
+    <title>AQR Control Maestro - R.A.T.S V.8</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root { --bg-sidebar: #0f172a; --accent: #2563eb; }
         body { font-family: 'Segoe UI', sans-serif; display: flex; margin: 0; background: #f1f5f9; height: 100vh; overflow: hidden; }
         
         #sidebar { width: 280px; background: var(--bg-sidebar); color: white; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; }
-        .top-nav { width: 100%; display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; padding-top: 10px; }
-        
         .btn { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; transition: 0.2s; }
         .btn-sync { background: #3b82f6; width: 100%; margin-bottom: 10px; }
         .btn-pdf { background: #ef4444; }
-        .btn-config { background: #64748b; font-size: 11px; margin-top: 5px; }
 
         .tabs { display: flex; gap: 5px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
         .tab { padding: 6px 12px; background: #cbd5e1; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         .tab.active { background: var(--accent); color: white; }
 
-        /* Contenedor PDF */
         #main { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; align-items: center; }
-        #capture-area { background: white; padding: 10mm; width: 195mm; min-height: 260mm; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 0 auto; }
+        #capture-area { background: white; padding: 10mm; width: 195mm; min-height: 265mm; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 0 auto; }
 
-        /* Edición de texto */
         .editable { outline: none; border: 1px solid transparent; padding: 2px; transition: 0.2s; }
         .editable:hover { border: 1px dashed #3b82f6; background: #f0f7ff; }
         .editable:focus { border: 1px solid #3b82f6; background: white; }
 
-        /* Tabla */
+        /* Tabla Reforzada */
         .grid { display: flex; flex-direction: column; border: 1px solid black; background: black; gap: 1px; }
         .row { display: flex; background: black; gap: 1px; min-height: 58px; }
         .row-header { min-height: 35px !important; background: white; }
-        .cell { background: white; flex: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
-        .cell-time { flex: 0 0 85px; font-size: 7.5pt; font-weight: bold; text-align: center; line-height: 1.2; }
+        .cell { background: white; flex: 1; display: flex; align-items: center; justify-content: center; position: relative; }
+        .cell-time { flex: 0 0 85px; font-size: 7.5pt; font-weight: bold; text-align: center; }
         
         .materia-content { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; font-size: 9px; padding: 4px; box-sizing: border-box; color: black; }
         .materia-content b { font-size: 9.5px; margin-bottom: 2px; }
@@ -45,18 +40,13 @@
 
 <div id="sidebar">
     <h2 style="font-size: 1.2rem; margin-bottom: 5px;">AQR R.A.T.S</h2>
-    <p style="font-size: 11px; color: #94a3b8;">Control Centralizado por Excel</p>
-    
+    <p style="font-size: 11px; color: #94a3b8;">Sincronización de Horarios 7:00 AM</p>
     <button class="btn btn-sync" onclick="syncWithGoogle()">🔄 Sincronizar Excel</button>
-    <p style="font-size: 10px; color: #64748b;">Nota: Al sincronizar, se sobrescriben los cambios manuales por lo que diga el Excel.</p>
-    
-    <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid #334155;">
-        <p style="font-size: 10px;">Versión 7.0 - Solo Lectura</p>
-    </div>
+    <div style="margin-top: auto; font-size: 10px; color: #64748b;">V.8.0 - Horario Corregido</div>
 </div>
 
 <div id="main">
-    <div class="top-nav">
+    <div class="top-nav" style="margin-bottom: 20px;">
         <button class="btn btn-pdf" onclick="exportPDF()">⬇ Descargar PDF</button>
     </div>
 
@@ -74,6 +64,38 @@
         </div>
 
         <div class="grid" id="grid-body">
+            </div>
+        <p style="text-align:center; font-size: 7pt; margin-top: 15px; font-style: italic; opacity: 0.6;">R.A.T.S - Registro Autor Controlado</p>
+    </div>
+</div>
+
+<script>
+    const SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5V41q3aGjOH5IsmJGWeS9VffmtrXvFXj9wv3o6Jda406EHASwcXO5SUQpQeqoJRY3hg4O8iKB5RoP/pub?output=csv";
+    
+    const grupos = ["1A", "1B", "1C", "1A-ESP", "2A", "2B", "2C", "2A-ESP", "3A", "3B", "3C"];
+    
+    // HORARIOS CORREGIDOS (7:00 AM INICIO)
+    const horas = [
+        "07:00-07:50", // Bloque 1
+        "07:50-08:40", // Bloque 2
+        "08:40-09:30", // Bloque 3
+        "RECESO",      // Bloque 4 (Índice 3)
+        "10:00-10:50", // Bloque 5
+        "10:50-11:40", // Bloque 6
+        "11:40-12:30", // Bloque 7
+        "12:30-13:20", // Bloque 8
+        "13:20-14:10"  // Bloque 9
+    ];
+
+    const diasMap = {"LUNES":0, "MARTES":1, "MIÉRCOLES":2, "MIERCOLES":2, "JUEVES":3, "VIERNES":4, "SÁBADO":5, "SABADO":5};
+    
+    let activeG = localStorage.getItem('aqr_last_group') || "1A";
+    let database = JSON.parse(localStorage.getItem('aqr_v8_db')) || {};
+    let customTitles = JSON.parse(localStorage.getItem('aqr_v8_titles')) || {};
+
+    function init() {
+        const body = document.getElementById('grid-body');
+        body.innerHTML = `
             <div class="row row-header">
                 <div class="cell cell-time">HORA</div>
                 <div class="cell" style="font-weight:bold; font-size:8pt;">LUNES</div>
@@ -83,38 +105,20 @@
                 <div class="cell" style="font-weight:bold; font-size:8pt;">VIERNES</div>
                 <div class="cell" style="font-weight:bold; font-size:8pt;">SÁBADO</div>
             </div>
-        </div>
-        <p style="text-align:center; font-size: 7pt; margin-top: 15px; font-style: italic; opacity: 0.6;">R.A.T.S - Registro Autor Controlado</p>
-    </div>
-</div>
+        `;
 
-<script>
-    const SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5V41q3aGjOH5IsmJGWeS9VffmtrXvFXj9wv3o6Jda406EHASwcXO5SUQpQeqoJRY3hg4O8iKB5RoP/pub?output=csv";
-    
-    // Grupos base + Espacios para horarios especiales (Dobles)
-    const grupos = ["1A", "1B", "1C", "1A-ESP", "2A", "2B", "2C", "2A-ESP", "3A", "3B", "3C"];
-    const horas = ["07:00-07:50", "07:50-08:40", "08:40-09:30", "RECESSO", "10:00-10:50", "10:50-11:40", "11:40-12:30", "12:30-13:20", "13:20-14:10"];
-    const diasMap = {"LUNES":0, "MARTES":1, "MIÉRCOLES":2, "MIERCOLES":2, "JUEVES":3, "VIERNES":4, "SÁBADO":5, "SABADO":5};
-    
-    let activeG = localStorage.getItem('aqr_last_group') || "1A";
-    let database = JSON.parse(localStorage.getItem('aqr_v7_db')) || {};
-    let customTitles = JSON.parse(localStorage.getItem('aqr_v7_titles')) || {};
-
-    function init() {
-        const body = document.getElementById('grid-body');
         horas.forEach((h, idx) => {
-            if(idx === 0) return;
             const row = document.createElement('div');
             row.className = 'row';
-            row.innerHTML = `<div class="cell cell-time">${h === "RECESSO" ? "09:30-10:00" : h}</div>`;
+            row.innerHTML = `<div class="cell cell-time">${h === "RECESO" ? "09:30-10:00" : h}</div>`;
             
-            if(h === "RECESSO") {
-                row.innerHTML += `<div class="cell recesso">RECESSO</div>`;
+            if(h === "RECESO") {
+                row.innerHTML += `<div class="cell recesso">RECESO</div>`;
             } else {
                 for(let d=0; d<6; d++) {
                     const cell = document.createElement('div');
                     cell.className = 'cell target-cell';
-                    cell.id = `cell-${idx}-${d}`;
+                    cell.id = `cell-${idx + 1}-${d}`; // Bloque 1, 2, 3...
                     row.appendChild(cell);
                 }
             }
@@ -131,8 +135,6 @@
             const response = await fetch(SHEETS_URL);
             const data = await response.text();
             const rows = data.split('\n');
-            
-            // Limpieza total antes de cargar
             grupos.forEach(g => database[g] = {});
 
             rows.forEach((row, i) => {
@@ -148,47 +150,35 @@
                     database[gKey][`${bloque}-${dIdx}`] = { m: mat, p: prof, c: col.replace(/\s+/g, '').toLowerCase() };
                 }
             });
-            
-            save();
-            updateView();
-            alert("✅ Sincronizado. Los horarios ahora reflejan exactamente tu Excel.");
-        } catch (e) { alert("Error al conectar con Google Sheets."); }
+            save(); updateView();
+            alert("✅ Sincronizado. Horario de 7:00 AM aplicado.");
+        } catch (e) { alert("Error al conectar."); }
     }
 
     function updateView() {
         document.querySelectorAll('.target-cell').forEach(c => {
             c.innerHTML = '';
-            const [b, d] = c.id.replace('cell-', '').split('-');
-            const data = database[activeG] ? database[activeG][`${b}-${d}`] : null;
-            
+            const data = database[activeG] ? database[activeG][c.id.replace('cell-', '')] : null;
             if(data && data.m !== "") {
-                c.innerHTML = `
-                    <div class="materia-content" style="background-color: ${data.c}">
-                        <b>${data.m}</b>
-                        <span>${data.p}</span>
-                    </div>`;
+                c.innerHTML = `<div class="materia-content" style="background-color: ${data.c}"><b>${data.m}</b><span>${data.p}</span></div>`;
             }
         });
-        
-        // Cargar el nombre específico del grupo guardado
         document.getElementById('current-group-display').innerText = customTitles[activeG] || `GRUPO ${activeG}`;
     }
 
-    // GESTIÓN DE TÍTULOS Y MEMORIA
     function saveTitles() {
         const t1 = document.getElementById('edit-titulo-h1').innerText;
         const t2 = document.getElementById('edit-titulo-h2').innerText;
-        localStorage.setItem('aqr_main_titles', JSON.stringify({t1, t2}));
+        localStorage.setItem('aqr_main_titles_v8', JSON.stringify({t1, t2}));
     }
 
     function saveGroupTitle() {
-        const newTitle = document.getElementById('current-group-display').innerText;
-        customTitles[activeG] = newTitle;
-        localStorage.setItem('aqr_v7_titles', JSON.stringify(customTitles));
+        customTitles[activeG] = document.getElementById('current-group-display').innerText;
+        localStorage.setItem('aqr_v8_titles', JSON.stringify(customTitles));
     }
 
     function loadSavedTitles() {
-        const main = JSON.parse(localStorage.getItem('aqr_main_titles'));
+        const main = JSON.parse(localStorage.getItem('aqr_main_titles_v8'));
         if(main) {
             document.getElementById('edit-titulo-h1').innerText = main.t1;
             document.getElementById('edit-titulo-h2').innerText = main.t2;
@@ -201,23 +191,14 @@
     }
 
     function changeG(g) { 
-        activeG = g; 
-        localStorage.setItem('aqr_last_group', g);
-        renderTabs(); 
-        updateView(); 
+        activeG = g; localStorage.setItem('aqr_last_group', g);
+        renderTabs(); updateView(); 
     }
 
-    function save() { localStorage.setItem('aqr_v7_db', JSON.stringify(database)); }
-    
+    function save() { localStorage.setItem('aqr_v8_db', JSON.stringify(database)); }
     function exportPDF() { 
         const area = document.getElementById('capture-area');
-        const opt = {
-            margin: 5,
-            filename: `${document.getElementById('current-group-display').innerText}.pdf`,
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: 'mm', format: 'letter', orientation: 'portrait' }
-        };
-        html2pdf().set(opt).from(area).save();
+        html2pdf().set({ margin: 5, filename: `${document.getElementById('current-group-display').innerText}.pdf`, html2canvas: { scale: 2 } }).from(area).save();
     }
 
     init();
