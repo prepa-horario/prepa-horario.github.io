@@ -77,21 +77,21 @@
 <div id="app-content">
     <div class="container-flex">
         <div id="sidebar">
-            <h2 style="margin-bottom: 5px;">R.A.T.S Panel</h2>
+            <h2 style="margin-bottom: 5px;">Panel</h2>
             <p style="font-size: 11px; color: #94a3b8; margin-bottom: 20px;">Excel de origen <a href="https://docs.google.com/spreadsheets/d/1HiutzvGFlvBurHu0IR5gh-GSSR7NL7s52ZPtvVIUbgM/edit#gid=0" target="_blank" style="color:#60a5fa">click aquí</a> </p>
             
             <button class="btn btn-sync" onclick="syncWithGoogle()">SINCRONIZAR EXCEL</button>
             
             <div style="border-top: 1px solid #475569; margin-top: 10px; padding-top: 10px;">
-                <button class="btn btn-clear" onclick="clearLocalMemory()">⚠️ FORZAR BORRADO TOTAL</button>
+                <button class="btn btn-clear" onclick="clearLocalMemory()">FORZAR BORRADO TOTAL</button>
             </div>
 
-            <div style="margin-top: auto; font-size: 10px; color: #64748b;">AQR - Response and Analysis for Threat Security</div>
+            <div style="margin-top: auto; font-size: 10px; color: #64748b;">R.A.T.S - Response and Analysis for Threat Security</div>
         </div>
 
         <div id="main">
             <div class="top-nav" style="margin-bottom: 15px;">
-                <button class="btn btn-pdf" onclick="exportPDF()">⬇ DESCARGAR PDF</button>
+                <button class="btn btn-pdf" onclick="exportPDF()">⬇ DESCARGAR PDF ⬇</button>
             </div>
 
             <div class="tabs-container">
@@ -118,7 +118,7 @@
 
 <script>
     // --- CONFIGURACIÓN DE SEGURIDAD ---
-    const PASS_CORRECTA = "AQR2025"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
+    const PASS_CORRECTA = "AQRADMIN"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
 
     function checkLogin() {
         const input = document.getElementById('passInput').value;
@@ -267,6 +267,8 @@
         };
         html2pdf().set(opt).from(area).save();
     }
+    //si alguien se toma la desdicha de leer, entender esto y quiere hacerlo menos pesado, suerte, esta cosa es basicamente imposible de comprimir por medios como este, 
+    //si tratas de entenderlo, llamame y te explicare +52 1 777 352 3251
 </script>
 </body>
 </html>
