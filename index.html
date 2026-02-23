@@ -91,26 +91,7 @@
 </div>
 
 <script>
-    // --- CONFIGURACIÓN DE SEGURIDAD ---
-    const PASS_CORRECTA = "AQRADMIN"; // <--- CAMBIA TU CONTRASEÑA AQUÍ
 
-    function checkLogin() {
-        const input = document.getElementById('passInput').value;
-        const errorMsg = document.getElementById('loginError');
-        
-        if(input === PASS_CORRECTA) {
-            document.getElementById('login-overlay').style.display = 'none';
-            document.getElementById('app-content').style.display = 'block';
-            init(); // Arranca la app
-        } else {
-            errorMsg.style.display = 'block';
-        }
-    }
-
-    // Permitir entrar con la tecla Enter
-    document.getElementById('passInput').addEventListener('keypress', function (e) {
-        if (e.key === 'Enter') checkLogin();
-    });
 
     // --- LÓGICA DEL SISTEMA ---
     const SHEETS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT5V41q3aGjOH5IsmJGWeS9VffmtrXvFXj9wv3o6Jda406EHASwcXO5SUQpQeqoJRY3hg4O8iKB5RoP/pub?output=csv";
