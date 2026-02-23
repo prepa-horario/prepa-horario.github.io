@@ -8,24 +8,7 @@
         :root { --bg-sidebar: #1e293b; --accent: #3b82f6; }
         body { font-family: 'Helvetica', 'Arial', sans-serif; margin: 0; background: #f1f5f9; height: 100vh; overflow: hidden; }
         
-        /* --- ESTILOS DEL LOGIN --- */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #0f172a; display: flex; justify-content: center; align-items: center;
-            z-index: 9999; color: white;
-        }
-        .login-box {
-            background: #1e293b; padding: 40px; border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; width: 320px;
-        }
-        .login-box input {
-            width: 100%; padding: 12px; margin: 20px 0; border-radius: 6px;
-            border: none; outline: none; font-size: 16px; text-align: center;
-        }
-        .btn-login {
-            background: var(--accent); color: white; border: none; padding: 10px 20px;
-            border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%;
-        }
+
 
         /* --- ESTILOS DEL DASHBOARD --- */
         #app-content { display: none; height: 100vh; } /* Oculto por defecto */
@@ -63,16 +46,7 @@
 </head>
 <body>
 
-<div id="login-overlay">
-    <div class="login-box">
-        <img src="AQR.jpg" style="height: 100px; margin-bottom: 10px;">
-        <h3>Acceso Restringido</h3>
-        <p style="font-size: 12px; color: #94a3b8;">Introduce la clave del sistema</p>
-        <center><input type="password" id="passInput" placeholder="Contraseña">
-        <button class="btn-login" onclick="checkLogin()">ENTRAR</button></center>
-        <p id="loginError" style="color: #ef4444; font-size: 12px; margin-top: 10px; display: none;">Contraseña incorrecta</p>
-    </div>
-</div>
+
 
 <div id="app-content">
     <div class="container-flex">
